@@ -1,0 +1,42 @@
+name: bpoe-events-db-handler
+services:
+  app:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    image: am/bpoe-api-ocr:latest
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/
+    env_file:
+      - .env
+    networks:
+      - postgres
+    depends_on:
+      postgres_timescaledb:
+        condition: service_healthy
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ../log:/log
+
+  postgres_timescaledb:
+    image: timescale/timescaledb:latest-pg17
+    container_name: timescaledb
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    volumes:
+      - ../temp/ptg:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+networks:
+  postgres:
+    driver: bridge

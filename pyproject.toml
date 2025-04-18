@@ -1,0 +1,60 @@
+[project]
+name = "bpoe-events-db-handler"
+version = "0.1.0"
+description = "Placeholder"
+requires-python = ">=3.12.10"
+dependencies = [
+    "asyncpg>=0.30.0",
+    "fastapi>=0.115.12",
+    "psycopg2>=2.9.10",
+    "python-decouple>=3.8",
+    "uvicorn>=0.34.1",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "mypy>=1.15.0",
+    "pre-commit>=4.2.0",
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.26.0",
+    "pytest-cov>=6.1.1",
+    "ruff>=0.11.6",
+]
+
+[tool.pytest]
+pythonpath = "./src"
+
+[tool.pytest.ini_options]
+addopts = "--junitxml=./result/pytest_result.xml --cov=src --cov-report html:result/html"
+filterwarnings = [
+    "ignore::UserWarning",
+    'ignore:function ham\(\) is deprecated:DeprecationWarning',
+    "ignore:module 'sre_constants' is deprecated:DeprecationWarning",
+    "ignore::SyntaxWarning",
+]
+
+[tool.ruff]
+extend-exclude = []
+line-length = 124
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = 124
+
+[tool.ruff.lint]
+select = ["E", "F", "UP", "B", "SIM", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["F401", "F841"]
+"test_*.py" = ["F401", "F841"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends", "fastapi.Query", "fastapi.params.Query"]
+
+[tool.mypy]
+files = ["src"]
+exclude = ["tests/", "migrations/"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]

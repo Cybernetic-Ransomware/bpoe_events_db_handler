@@ -2,7 +2,7 @@ FROM python:3.12.10-alpine3.21 AS builder
 
 WORKDIR /src
 
-RUN apk update
+RUN apk update && apk add --no-cache postgresql-dev gcc musl-dev
 
 RUN python -m pip install --upgrade pip --break-system-packages && \
     pip install uv --break-system-packages
@@ -15,6 +15,8 @@ RUN uv sync --no-cache --no-group dev
 FROM python:3.12.10-alpine3.21 AS runtime
 LABEL authors="aleksander.marszalki"
 LABEL name="bpoe-ocr"
+
+RUN apk update && apk add --no-cache postgresql-dev gcc musl-dev
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 

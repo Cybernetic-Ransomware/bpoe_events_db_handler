@@ -1,11 +1,11 @@
 import logging
 from pathlib import Path
 
-from src.config import LOGGER_LEVEL
+from config.config import LOGGER_LEVEL
 
 
 def setup_logger(name: str, file: str, level: int = LOGGER_LEVEL) -> logging.Logger:
-    log_dir = Path(__file__).resolve().parents[1] / "log"
+    log_dir = Path(__file__).resolve().parents[2] / "log"
     log_dir.mkdir(parents=True, exist_ok=True)
 
     logger = logging.getLogger(name)

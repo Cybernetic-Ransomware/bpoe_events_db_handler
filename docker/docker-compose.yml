@@ -4,7 +4,6 @@ services:
     build:
       context: ../
       dockerfile: ./docker/Dockerfile
-    image: am/bpoe-api-ocr:latest
     environment:
       - PYTHONUNBUFFERED=1
       - PYTHONPATH=/
@@ -22,7 +21,9 @@ services:
       - ../log:/log
 
   postgres_timescaledb:
-    image: timescale/timescaledb:2.19.3-pg17
+    build:
+      context: ../
+      dockerfile: ./docker/DockerfileDB
     container_name: timescaledb
     ports:
       - "5432:5432"
@@ -30,6 +31,7 @@ services:
       - .env
     volumes:
       - ../temp/ptg:/var/lib/postgresql/data
+      - ./init_postgres.sql:/docker-entrypoint-initdb.d/init_postgres.sql
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "postgres" ]
       interval: 30s

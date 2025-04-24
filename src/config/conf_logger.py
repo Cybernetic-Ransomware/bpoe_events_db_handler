@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from config.config import LOGGER_LEVEL
+from src.config.config import LOGGER_LEVEL
 
 
 def setup_logger(name: str, file: str, level: int = LOGGER_LEVEL) -> logging.Logger:

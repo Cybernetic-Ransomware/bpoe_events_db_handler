@@ -2,8 +2,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from config.conf_logger import setup_logger
-from config.config import DEBUG
+from src.config.conf_logger import setup_logger
+from src.config.config import DEBUG
 
 logger = setup_logger(__name__, "main")
 

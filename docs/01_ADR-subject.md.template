@@ -1,0 +1,30 @@
+# ADR: [Title of the Architectural Decision]
+
+## Context
+Describe the technical and organizational context in which the decision is being made. Explain why this issue is relevant and what led to the consideration of change.
+
+## Decision
+State the decision clearly and concisely — what has been chosen or changed. This should be one or two sentences summarizing the core of the decision.
+
+## Rationale
+### Evaluation of Alternatives
+List the considered options and explain why the chosen one was selected. Mention the advantages of the selected option and limitations of the others.
+
+### Technical Considerations
+Detail the technical reasons behind the decision — e.g., performance, compatibility, support, ease of use, scalability.
+
+### Integration with Existing Environment
+Explain how the new decision affects current workflows, tools, or teams. Note if migration, configuration changes, or additional training is required.
+
+### Future Potential
+Indicate whether the decision enables further improvements in the future or whether it’s an experimental choice with possible broader adoption or rollback.
+
+## Consequences
+### Positive Outcomes
+List the anticipated benefits of implementing this decision.
+
+### Challenges & Mitigation
+Identify potential risks, issues, or limitations, and describe how these will be mitigated or managed.
+
+## Status
+Specify the current status of the decision: `Proposed`, `Accepted`, `Rejected`, `Superseded`, etc. Also indicate the scope of the decision — whether it applies project-wide or only in a limited context.

@@ -1,5 +1,5 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator
 import pendulum
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 # ---------- LOCATION ----------

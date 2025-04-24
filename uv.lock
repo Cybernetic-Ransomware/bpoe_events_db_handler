@@ -76,6 +76,7 @@ dependencies = [
     { name = "psycopg2-binary" },
     { name = "pydantic", extra = ["email"] },
     { name = "python-decouple" },
+    { name = "sqlalchemy" },
     { name = "sqlmodel" },
     { name = "uvicorn" },
 ]
@@ -102,6 +103,7 @@ requires-dist = [
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
     { name = "pydantic", extras = ["email"], specifier = ">=2.11.3" },
     { name = "python-decouple", specifier = ">=3.8" },
+    { name = "sqlalchemy", specifier = ">=2.0.40" },
     { name = "sqlmodel", specifier = ">=0.0.24" },
     { name = "uvicorn", specifier = ">=0.34.1" },
 ]

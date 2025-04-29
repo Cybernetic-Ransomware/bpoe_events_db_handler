@@ -82,8 +82,42 @@ or as a standalone tool:
 uvx mypy .\src\
 ```
 
+#### Quick Mongo Instance
+```powershell
+docker-compose -f .\docker\docker-compose-mongo-pg.yml up --build -d
+```
+
 #### Database Access:
 Connect to the Postgres Instance via pgAdmin.
 
+To connect to the MongoDB cluster with MongoDB Compass:
+1. Open MongoDB Compass
+2. Use the connection string, by default: `mongodb://localhost:27017/`
+3. Click "Connect"
+
+To verify if sharding is enabled for a collection:
+1. Open the MongoDB Shell in Compass and check the sharding status:
+   ```bash
+   sh.status()
+   ```
+2. Look for information about a sharded collection, for example:
+   ```bash
+   sh.shardCollection("ocr.ocr_images", { _id: 1 })
+   ```
+3. If the collections section is empty, the collection is not sharded yet:
+   ```bash
+   "ocr": {
+   primary: 'rs-shard02',
+   collections: {}
+   }
+   ```
+4. To enable sharding, run the following commands:
+   ```bash
+   sh.enableSharding("ocr")
+   sh.shardCollection("ocr.ocr_images", { _id: 1 })
+   ```
+
+
 ## Useful links and documentation
 - Install TimescaleDB on Windows: [TimescaleDB](https://docs.timescale.com/self-hosted/latest/install/installation-windows/)
+- Mongo Compass winget command [winget](https://winget.run/pkg/MongoDB/Compass.Full)

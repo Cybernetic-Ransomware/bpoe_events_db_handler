@@ -46,7 +46,7 @@ services:
       timeout: 10s
 
 # for reading only, same as:
-#  https://github.com/Cybernetic-Ransomware/bpoe-ocr
+# https://github.com/Cybernetic-Ransomware/bpoe-ocr
   mongodb:
     image: mongo:8.0.6
     container_name: mongos02

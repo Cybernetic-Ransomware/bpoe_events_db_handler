@@ -11,9 +11,12 @@ services:
       - .env
     networks:
       - postgres
+      - mongo
     depends_on:
       postgres_timescaledb:
         condition: service_healthy
+      mongodb:
+        condition: service_started
     restart: unless-stopped
     ports:
       - "127.0.0.1:8080:8080"
@@ -27,18 +30,40 @@ services:
     container_name: timescaledb
     ports:
       - "5432:5432"
+      - "0.0.0.0:5433:5432"
     env_file:
       - .env
     volumes:
       - ../temp/ptg:/var/lib/postgresql/data
       - ./init_postgres.sql:/docker-entrypoint-initdb.d/init_postgres.sql
+    networks:
+      - postgres
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"  ]
       interval: 30s
       retries: 3
       start_period: 10s
       timeout: 10s
 
+# for reading only, same as:
+#  https://github.com/Cybernetic-Ransomware/bpoe-ocr
+  mongodb:
+    image: mongo:8.0.6
+    container_name: mongos02
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ../temp/mongo_pg:/data/db
+    networks:
+      - mongo
+    ports:
+      - "27017:27017"
+      - "0.0.0.0:27017:27017"
+
 networks:
   postgres:
+    driver: bridge
+  mongo:
     driver: bridge

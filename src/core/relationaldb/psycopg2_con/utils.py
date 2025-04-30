@@ -5,7 +5,7 @@ import asyncpg
 from psycopg2 import pool
 from psycopg2.extras import RealDictCursor
 
-from src.config.config import POOL_SIZE, POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_USER
+from src.config.config import POSTGRES_POOL_SIZE, POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_USER
 
 
 class BasePGConnector(ABC):
@@ -15,7 +15,7 @@ class BasePGConnector(ABC):
         self.database = POSTGRES_DB
         self.user = POSTGRES_USER
         self.password = POSTGRES_PASSWORD
-        self.pool_size = POOL_SIZE
+        self.pool_size: tuple[int, int] = POSTGRES_POOL_SIZE
 
     @abstractmethod
     def connect(self):
@@ -25,13 +25,13 @@ class BasePGConnector(ABC):
 class SyncPGConnector(BasePGConnector):
     def __init__(self):
         super().__init__()
-        self._connection_pool = None
+        self._connection_pool: pool.AbstractConnectionPool | None = None
 
     def connect(self):
         if not self._connection_pool:
             self._connection_pool = pool.SimpleConnectionPool(
-                minconn=1,
-                maxconn=self.pool_size,
+                minconn=self.pool_size[0],
+                maxconn=self.pool_size[1],
                 host=self.host,
                 port=self.port,
                 database=self.database,
@@ -65,13 +65,13 @@ class SyncPGConnector(BasePGConnector):
 class AsyncPGConnector(BasePGConnector):
     def __init__(self):
         super().__init__()
-        self._pool = None
+        self._pool: asyncpg.Pool | None = None
 
     async def connect(self):
         if not self._pool:
             self._pool = await asyncpg.create_pool(
-                min_size=1,
-                max_size=self.pool_size,
+                min_size=self.pool_size[0],
+                max_size=self.pool_size[1],
                 host=self.host,
                 port=self.port,
                 database=self.database,
@@ -89,6 +89,10 @@ class AsyncPGConnector(BasePGConnector):
     async def get_connection(self):
         async with self._pool.acquire() as conn:
             yield conn
+
+    async def close_postgres(self) -> None:
+        if self._pool is not None:
+            await self._pool.close()
 
 
 def get_pg_connector(mode: str = "sync") -> BasePGConnector:

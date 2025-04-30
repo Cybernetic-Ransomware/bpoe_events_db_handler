@@ -1,5 +1,5 @@
-from src.core.pool.psycopg2_con.utils import get_pg_connector
-from src.core.pool.sqlalchemy_con.utils import SessionLocal
+from core.relationaldb._deprecated.sqlalchemy_con.utils import SessionLocal
+from core.relationaldb.psycopg2_con.utils import get_pg_connector
 
 
 def get_db_via_psycopg2_connector():

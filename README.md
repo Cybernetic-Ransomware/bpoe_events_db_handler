@@ -123,3 +123,5 @@ Example file to insert into MongoDB:
 ## Useful links and documentation
 - Install TimescaleDB on Windows: [TimescaleDB](https://docs.timescale.com/self-hosted/latest/install/installation-windows/)
 - Mongo Compass winget command [winget](https://winget.run/pkg/MongoDB/Compass.Full)
+- MongoDB Asynch Connector [Motor](https://motor.readthedocs.io/en/stable/tutorial-asyncio.html)
+- Async_postgres guide [Neon](https://neon.tech/guides/fastapi-async)

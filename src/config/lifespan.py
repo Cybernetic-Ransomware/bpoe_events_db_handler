@@ -4,7 +4,7 @@ from fastapi import FastAPI
 
 from src.config.conf_logger import setup_logger
 from src.config.config import DEBUG, MONGO_COLLECTION, MONGO_DB
-from src.core.documentstorage.utils import MongoConnector
+from src.core.documentstorage.utils import MongoAsynchConnector
 from src.core.relationaldb.psycopg2_con.utils import AsyncPGConnector
 
 logger = setup_logger(__name__, "main")
@@ -16,8 +16,8 @@ async def lifespan(app: FastAPI):
     print(f"{DEBUG=}", flush=True)
 
     try:
-        connector = MongoConnector(mongo_db=MONGO_DB, mongo_collection=MONGO_COLLECTION)
-        connector._perform_startup_checks()
+        connector = MongoAsynchConnector(mongo_db=MONGO_DB, mongo_collection=MONGO_COLLECTION)
+        await connector._perform_startup_checks()
         app.state.mongo_connector = connector
 
     except Exception as e:

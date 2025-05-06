@@ -16,7 +16,7 @@ mongo_client: MongoClient = MongoClient(
     minPoolSize=MONGO_POOL_SIZE[0],
 )
 
-mongo_asynch_client = AsyncIOMotorClient(
+mongo_async_client = AsyncIOMotorClient(
     MONGO_READER_URI,
     maxPoolSize=MONGO_POOL_SIZE[1],
     minPoolSize=MONGO_POOL_SIZE[0],

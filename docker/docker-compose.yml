@@ -34,8 +34,8 @@ services:
     env_file:
       - .env
     volumes:
-      - ../temp/ptg:/var/lib/postgresql/data
-      - ./init_postgres.sql:/docker-entrypoint-initdb.d/init_postgres.sql
+      - pgdata:/var/lib/postgresql/data
+      - ./init_postgres.sql:/docker-entrypoint-initdb.d/init_postgres.sql:ro
     networks:
       - postgres
     healthcheck:
@@ -55,7 +55,7 @@ services:
       - .env
     volumes:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-      - ../temp/mongo_pg:/data/db
+      - mongodata:/data/db
     networks:
       - mongo
     ports:
@@ -67,3 +67,7 @@ networks:
     driver: bridge
   mongo:
     driver: bridge
+
+volumes:
+  pgdata:
+  mongodata:

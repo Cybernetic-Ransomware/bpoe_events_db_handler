@@ -21,7 +21,7 @@ def read_ocr(image_name: str, user_email: str, connector: MongoConnector = Depen
     ocr_data = connector.get_ocr_result(image_name, user_email)
     return OCROnlyResult(ocr_result=ocr_data)
 
-@router.get("/ocr_full/", response_model=OCRedImageResult)
+@router.get("/ocr/full/", response_model=OCRedImageResult)
 def read_ocr_full(image_name: str, user_email: str, connector: MongoConnector = Depends(get_mongo_connector)):
     return connector.get_ocr_result(image_name, user_email)
 

@@ -97,7 +97,7 @@ class MongoConnector:
 class MongoAsynchConnector(MongoConnector):
     def __init__(self, mongo_db: str = MONGO_DB, mongo_collection: str = MONGO_COLLECTION):
         super().__init__(mongo_db, mongo_collection)
-        self.database = mongo_asynch_client[self.mongo_db]
+        self.database = mongo_async_client[self.mongo_db]
 
     async def get_ocr_result(self, image_name: str, user_email: str) -> list[str]:
         try:
@@ -119,7 +119,7 @@ class MongoAsynchConnector(MongoConnector):
     async def _perform_startup_checks(self):
         logger.info("Performing MongoDB startup checks...")
         try:
-            server_info = await mongo_asynch_client.server_info()
+            server_info = await mongo_async_client.server_info()
             logger.info(f"Successfully connected to MongoDB server version {server_info['version']}")
 
             if self.mongo_collection not in await self.database.list_collection_names():

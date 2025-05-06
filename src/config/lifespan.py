@@ -13,7 +13,6 @@ logger = setup_logger(__name__, "main")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Application startup...")
-    print(f"{DEBUG=}", flush=True)
 
     try:
         connector = MongoAsynchConnector(mongo_db=MONGO_DB, mongo_collection=MONGO_COLLECTION)

@@ -1,6 +1,6 @@
-from sqlmodel import SQLModel, Field, Relationship
-from geoalchemy2 import Geometry
 import pendulum
+from geoalchemy2 import Geometry
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class Event(SQLModel, table=True):

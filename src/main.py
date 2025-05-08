@@ -1,11 +1,13 @@
 from fastapi import FastAPI
 
-from config.conf_logger import setup_logger
-from config.lifespan import lifespan
+from src.api.routers import router as api_router
+from src.config.conf_logger import setup_logger
+from src.config.lifespan import lifespan
 
 logger = setup_logger(__name__, "main")
 
 app = FastAPI(lifespan=lifespan)
+app.include_router(api_router, prefix="/api", tags=["api"])
 
 
 @app.get("/")

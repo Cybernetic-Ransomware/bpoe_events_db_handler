@@ -47,7 +47,7 @@ The purpose of this project is to build a handler for main db.
       uv run pre-commit autoupdate
       uv run pre-commit run --all-files
       ```
-8Run the application locally:
+8. Run the application locally:
       ```powershell
       uv run uvicorn src.main:app --host 0.0.0.0 --port 8080 --reload
       ```

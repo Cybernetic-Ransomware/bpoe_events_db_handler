@@ -40,6 +40,17 @@ def run_migrations_offline() -> None:
     with context.begin_transaction():
         context.run_migrations()
 
+# def include_object(object, name, type_, reflected, compare_to):
+#     if name == 'spatial_ref_sys':
+#         return False
+#     if name.startswith('_timescaledb_'):
+#         return False
+#     return True
+
+def include_name(name, type_, parent_names):
+    if type_ == "table":
+        return name in target_metadata.tables
+    return True
 
 async def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
@@ -59,6 +70,8 @@ async def run_migrations_online() -> None:
                 connection=sync_conn,
                 target_metadata=target_metadata,
                 compare_type=True,
+                # include_object=include_object,
+                include_name=include_name,
             )
         )
         await connection.run_sync(lambda _: context.run_migrations())

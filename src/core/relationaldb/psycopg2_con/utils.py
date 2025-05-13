@@ -5,7 +5,7 @@ import asyncpg
 from psycopg2 import pool
 from psycopg2.extras import RealDictCursor
 
-from src.config.config import POSTGRES_POOL_SIZE, POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_USER
+from src.config.config import POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_POOL_SIZE, POSTGRES_USER
 
 
 class BasePGConnector(ABC):
@@ -46,6 +46,8 @@ class SyncPGConnector(BasePGConnector):
 
     @contextmanager
     def get_connection(self):
+        if self._connection_pool is None:
+            raise RuntimeError("Connection pool has not been initialized.")
         conn = self._connection_pool.getconn()
         try:
             yield conn
@@ -87,6 +89,8 @@ class AsyncPGConnector(BasePGConnector):
 
     @asynccontextmanager
     async def get_connection(self):
+        if self._pool is None:
+            raise RuntimeError("Connection pool has not been initialized.")
         async with self._pool.acquire() as conn:
             yield conn
 
@@ -95,7 +99,7 @@ class AsyncPGConnector(BasePGConnector):
             await self._pool.close()
 
 
-def get_pg_connector(mode: str = "sync") -> BasePGConnector:
+def get_pg_connector(mode: str = "sync") -> SyncPGConnector | AsyncPGConnector:
     if mode == "sync":
         return SyncPGConnector()
     elif mode == "async":

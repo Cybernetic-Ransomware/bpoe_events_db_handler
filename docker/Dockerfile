@@ -30,8 +30,14 @@ RUN chmod -R +x /src/.venv/bin/
 
 RUN mkdir /log && chown appuser:appgroup /log
 
+#COPY ../docker/init_alembic.sh /app/init_alembic.sh
+#RUN chmod +x /app/init_alembic.sh
+#
+#ENTRYPOINT ["/app/init_alembic.sh"]
+
 USER appuser
 
 EXPOSE 8080/tcp
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["tail", "-f"]
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

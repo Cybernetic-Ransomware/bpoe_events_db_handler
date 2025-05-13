@@ -120,6 +120,12 @@ Example file to insert into MongoDB:
 }
 ```
 
+#### PostgreSQL migrations
+#####  Alembic migrations:
+- FastAPI Lifespawn should ensure migrations for all model changes.
+- Be sure to include all SQLmodel classes in module imports of : `src/core/relationaldb/migration_connector/__init__.py`  
+
+
 ## Useful links and documentation
 - Install TimescaleDB on Windows: [TimescaleDB](https://docs.timescale.com/self-hosted/latest/install/installation-windows/)
 - Mongo Compass winget command [winget](https://winget.run/pkg/MongoDB/Compass.Full)

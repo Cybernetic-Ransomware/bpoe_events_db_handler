@@ -24,4 +24,3 @@ def read_ocr(image_name: str, user_email: str, connector: MongoConnector = Depen
 @router.get("/ocr/full/", response_model=OCRedImageResult)
 def read_ocr_full(image_name: str, user_email: str, connector: MongoConnector = Depends(get_mongo_connector)):
     return connector.get_ocr_result(image_name, user_email)
-

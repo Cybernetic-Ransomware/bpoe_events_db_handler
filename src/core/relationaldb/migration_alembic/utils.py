@@ -6,9 +6,15 @@ $$
 BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM timescaledb_information.hypertables
-        WHERE hypertable_name = 'event'
+        WHERE hypertable_name = 'eventtransaction'
     ) THEN
-        PERFORM create_hypertable('event', 'opened_at', if_not_exists => TRUE);
+        PERFORM create_hypertable(
+            'eventtransaction',
+            'timestamp',
+            chunk_time_interval => interval '7 days',
+            if_not_exists => TRUE,
+            migrate_data => TRUE
+        );
     END IF;
 END
 $$;

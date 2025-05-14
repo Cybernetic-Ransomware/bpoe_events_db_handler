@@ -22,6 +22,7 @@ services:
       - "127.0.0.1:8080:8080"
     volumes:
       - ../log:/log
+      - ../src/core/relationaldb/migration_alembic/migrations:/src/core/relationaldb/migration_alembic/migrations
 
   postgres_timescaledb:
     build:

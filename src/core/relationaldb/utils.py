@@ -1,4 +1,3 @@
-from core.relationaldb._deprecated.sqlalchemy_con.utils import SessionLocal
 from core.relationaldb.psycopg2_con.utils import get_pg_connector
 
 
@@ -13,10 +12,3 @@ async def get_db_via_asyncpg_connector():
     await connector.connect()
     async with connector.get_connection() as conn:
         yield conn
-
-def get_db_via_sqlalchemy_connector():
-    db=SessionLocal()
-    try:
-        yield db
-    except Exception:
-        db.close()

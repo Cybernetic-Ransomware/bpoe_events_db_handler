@@ -6,8 +6,7 @@ from fastapi import FastAPI
 from src.config.conf_logger import setup_logger
 from src.config.config import DEBUG, MONGO_COLLECTION, MONGO_DB
 from src.core.documentstorage.utils import MongoAsynchConnector
-
-# from src.core.relationaldb.migration_connector.utils import ensure_hypertables
+from src.core.relationaldb.migration_alembic.utils import ensure_hypertables
 from src.core.relationaldb.psycopg2_con.utils import AsyncPGConnector, get_pg_connector
 
 logger = setup_logger(__name__, "main")
@@ -33,11 +32,11 @@ async def lifespan(app: FastAPI):
         await pgpool_connector.connect()
         logger.info("PostgreSQL pool connection initiated.")
 
-        # actual_pool = pgpool_connector.get_pool()
-        #
-        # logger.info("Ensuring hypertables exist...")
-        # await ensure_hypertables(actual_pool)
-        # logger.info("Hypertables checked/created.")
+        actual_pool = pgpool_connector.get_pool()
+
+        logger.info("Ensuring hypertables exist...")
+        await ensure_hypertables(actual_pool)
+        logger.info("Hypertables checked/created.")
 
         app.state.postgres_pool_connector = pgpool_connector
         logger.info("PostgreSQL connector initialized successfully.")

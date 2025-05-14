@@ -122,8 +122,37 @@ Example file to insert into MongoDB:
 
 #### PostgreSQL migrations
 #####  Alembic migrations:
-- FastAPI Lifespawn should ensure migrations for all model changes.
-- Be sure to include all SQLmodel classes in module imports of : `src/core/relationaldb/migration_connector/__init__.py`  
+- The `Dockerfile` should ensure that all model changes are reflected through Alembic migrations.
+- Make sure all SQLAlchemy model's classes are imported in: `src/core/relationaldb/migration_alembic/__init__.py`  
+- FastAPI Lifespan and the Dockerfile are responsible for ensuring TimescaleDB hypertable creation.  
+  To verify, check that the following command is included in the Alembic migration "init" file:
+
+   ```python
+   def upgrade() -> None:
+       """Upgrade schema."""
+       (...)
+       op.execute("""
+       DO $$
+       BEGIN
+          IF NOT EXISTS (
+              SELECT 1 FROM timescaledb_information.hypertables WHERE hypertable_name = 'eventtransaction'
+          ) THEN
+              PERFORM create_hypertable(
+                  'eventtransaction',
+                  'timestamp',
+                  chunk_time_interval => interval '7 days',
+                  if_not_exists => TRUE,
+                  migrate_data => TRUE
+              );
+          END IF;
+       END
+       $$;
+       """)
+   ```
+   and by the SQL query:
+   ```sql
+   SELECT * FROM timescaledb_information.hypertables WHERE hypertable_name = 'eventtransaction';
+   ```
 
 
 ## Useful links and documentation

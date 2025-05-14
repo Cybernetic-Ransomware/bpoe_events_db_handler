@@ -1,6 +1,7 @@
 import asyncio
 
 from alembic import context
+from alembic.autogenerate import comparators
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine
 
@@ -53,6 +54,11 @@ def include_name(name, type_, parent_names):
         return name in target_metadata.tables
     return True
 
+def compare_indexes(context, connection, **kwargs):
+    if kwargs.get('name') == 'eventtransaction_timestamp_idx':
+        return False
+    return True
+
 async def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
 
@@ -73,6 +79,7 @@ async def run_migrations_online() -> None:
                 compare_type=True,
                 include_object=include_object,
                 include_name=include_name,
+                compare_indexes=compare_indexes,
             )
         )
         await connection.run_sync(lambda _: context.run_migrations())

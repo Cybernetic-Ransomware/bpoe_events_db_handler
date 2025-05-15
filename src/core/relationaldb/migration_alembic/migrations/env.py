@@ -5,9 +5,9 @@ from alembic.autogenerate import comparators
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine
 
-import src.core.relationaldb.migration_alembic  #noqa: F401  models from __init__.py
+import src.core.relationaldb.migration_alembic  #n models from __init__.py
 from src.config.config import POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_USER
-from src.core.relationaldb.models.models import Base  #noqa: F401
+from src.core.relationaldb.models.models import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -45,7 +45,7 @@ def run_migrations_offline() -> None:
 def include_object(object, name, type_, reflected, compare_to):
     if name == 'spatial_ref_sys':
         return False
-    if name.startswith('_timescaledb_'):  # noqa: SIM103, SIM10
+    if name.startswith('_timescaledb_'):
         return False
     return True
 

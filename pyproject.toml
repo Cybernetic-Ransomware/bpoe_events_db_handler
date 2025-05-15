@@ -22,6 +22,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "codespell>=2.4.1",
     "httpx>=0.28.1",
     "mypy>=1.15.0",
     "pre-commit>=4.2.0",
@@ -57,6 +58,7 @@ select = ["E", "F", "UP", "B", "SIM", "I"]
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["F401", "F841"]
 "test_*.py" = ["F401", "F841"]
+"src/core/relationaldb/migration_alembic/migrations/env.py" = ["SIM103", "F401", "SIM10"]
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends", "fastapi.Query", "fastapi.params.Query"]
@@ -65,3 +67,14 @@ extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends", "fastapi.
 files = ["src"]
 exclude = ["tests/", "migrations/"]
 ignore_missing_imports = true
+
+[tool.codespell]
+skip = """
+./.git,
+./.github,
+./tests/.*,
+./temp/.*,
+./log/.*,
+"""
+builtin = "clear"
+quiet-level = 3

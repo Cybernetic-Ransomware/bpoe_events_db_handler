@@ -82,6 +82,12 @@ or as a standalone tool:
 uvx mypy .\src\
 ```
 
+#### Codespell
+```powershell
+uv sync --extra dev
+uv run codespell
+```
+
 #### Quick Mongo Instance
 ```powershell
 docker-compose -f .\docker\docker-compose-mongo-pg.yml up --build -d
@@ -123,8 +129,8 @@ Example file to insert into MongoDB:
 #### PostgreSQL migrations
 #####  Alembic migrations:
 - The `Dockerfile` should ensure that all model changes are reflected through Alembic migrations.
-- Make sure all SQLAlchemy model's classes are imported in: `src/core/relationaldb/migration_alembic/__init__.py`  
-- FastAPI Lifespan and the Dockerfile are responsible for ensuring TimescaleDB hypertable creation.  
+- Make sure all SQLAlchemy model's classes are imported in: `src/core/relationaldb/migration_alembic/__init__.py`
+- FastAPI Lifespan and the Dockerfile are responsible for ensuring TimescaleDB hypertable creation.
   To verify, check that the following command is NOT included in the Alembic migration files:
 
    ```python

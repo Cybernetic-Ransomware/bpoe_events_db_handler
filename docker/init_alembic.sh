@@ -1,7 +1,5 @@
 #!/bin/sh
 
-set -e
-
 echo "Generating initial Alembic migration..."
 cd core/relationaldb/migration_alembic/
 

@@ -37,6 +37,8 @@ USER appuser
 
 EXPOSE 8080/tcp
 
+USER appuser
+
 #CMD ["tail", "-f"]
 ENTRYPOINT ["/src/init_alembic.sh"]
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

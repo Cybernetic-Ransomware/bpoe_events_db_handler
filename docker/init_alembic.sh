@@ -7,7 +7,7 @@ if [ ! -d "migrations/versions" ]; then
     mkdir -p migrations/versions
 fi
 
-if [ -z "$(ls -A migrations/versions)" ]; then
+if [ -z "$(find migrations/versions -maxdepth 1 -type f -name '*.py')" ]; then
     echo "Versions folder is empty. Creating initial migration..."
     alembic revision --autogenerate -m "initial"
 else

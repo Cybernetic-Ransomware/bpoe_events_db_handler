@@ -7,7 +7,12 @@ if [ ! -d "migrations/versions" ]; then
     mkdir -p migrations/versions
 fi
 
-alembic revision --autogenerate -m "initial"
+if [ -z "$(ls -A migrations/versions)" ]; then
+    echo "Versions folder is empty. Creating initial migration..."
+    alembic revision --autogenerate -m "initial"
+else
+    echo "Migration already exists. Skipping initial generation."
+fi
 
 echo "Applying Alembic migrations..."
 alembic upgrade head

@@ -1,10 +1,12 @@
+import uuid
 from datetime import datetime
 
 # from geoalchemy2 import types as geo_types
 # from shapely.geometry import Point
-from sqlalchemy import Boolean, DateTime, ForeignKey, PrimaryKeyConstraint, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, ForeignKey, PrimaryKeyConstraint, String, Text, UniqueConstraint, text
 
 # from sqlalchemy import Index, text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
 
@@ -15,7 +17,12 @@ class Base(DeclarativeBase):
 class Participant(Base):
     __tablename__ = "participant"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        default=uuid.uuid4,
+        nullable=False,
+        primary_key=True,
+    )
     name: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
 
@@ -33,7 +40,11 @@ class Event(Base):
         UniqueConstraint("id"),
     )
 
-    id: Mapped[int] = mapped_column()
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        default=uuid.uuid4,
+        nullable=False
+    )
     opened_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     name: Mapped[str] = mapped_column(Text)
@@ -68,8 +79,8 @@ class Event(Base):
 class EventOwner(Base):
     __tablename__ = "eventowner"
 
-    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), primary_key=True)
-    participant_id: Mapped[int] = mapped_column(ForeignKey("participant.id"), primary_key=True)
+    event_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("event.id"), primary_key=True)
+    participant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("participant.id"), primary_key=True)
 
     event: Mapped["Event"] = relationship()
     participant: Mapped["Participant"] = relationship()
@@ -88,13 +99,13 @@ class EventParticipantAssociation(Base):
         PrimaryKeyConstraint("event_id", "participant_id"),
     )
 
-    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"))
-    participant_id: Mapped[int] = mapped_column(ForeignKey("participant.id"))
+    event_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("event.id"))
+    participant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("participant.id"))
 
-    accepted: Mapped[bool] = mapped_column(Boolean, default=False)
+    accepted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, server_default=text("false"))
     accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    settled: Mapped[bool] = mapped_column(Boolean, default=False)
+    settled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, server_default=text("false"))
     settled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     event: Mapped["Event"] = relationship(back_populates="participant_links")
@@ -104,7 +115,7 @@ class EventParticipantAssociation(Base):
 class EventLocation(Base):
     __tablename__ = "eventlocation"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
 
     # location: Mapped[Point] = mapped_column(geo_types.Geometry(geometry_type='POINT', srid=4326))

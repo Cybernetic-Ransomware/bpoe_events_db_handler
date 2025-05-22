@@ -1,13 +1,14 @@
 import uuid
 
 from asyncpg import Connection
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 from src.api.dependencies import get_mongo_connector, get_pg_connector
-from src.api.schemas import EventCreateIn, EventRead
+from src.api.exceptions import NoRecordFoundError
 from src.config.conf_logger import setup_logger
 from src.core.documentstorage.models import OCRedImageResult, OCROnlyResult
 from src.core.documentstorage.utils import MongoConnector
+from src.core.relationaldb.models.schemas import EventCreateIn, EventRead
 from src.core.relationaldb.repositories.events import create_event_with_owner, get_event_by_id
 
 logger = setup_logger(__name__, "api")
@@ -47,6 +48,6 @@ async def read_event(
     try:
         event = await get_event_by_id(conn, event_id)
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e)) from e  #TODO custom
+        raise NoRecordFoundError(message=f"For requested id: {event_id}") from e
 
     return event

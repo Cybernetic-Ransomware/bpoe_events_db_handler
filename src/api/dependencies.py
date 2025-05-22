@@ -26,5 +26,5 @@ async def get_pg_connector(request: Request):
         raise ServerInitError(message="Internal server error: Invalid PostgreSQL DB connector type")
 
     pool = connector.get_pool()
-    async with pool.acquire() as conn:  # <- conn: asyncpg.Connection
+    async with pool.acquire() as conn:
         yield conn

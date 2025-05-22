@@ -1,5 +1,7 @@
 from fastapi import HTTPException
 
+from src.core.relationaldb.repositories.exceptions import NoRecordFoundError  #noqa: F401
+
 
 class ServerInitError(HTTPException):
     def __init__(self, code:int = 500, message:str = ''):

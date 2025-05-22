@@ -9,6 +9,8 @@ from sqlalchemy import Boolean, DateTime, ForeignKey, PrimaryKeyConstraint, Stri
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
+from src.core.relationaldb.models.exceptions import RecordUpdateNotAllowedError
+
 
 class Base(DeclarativeBase):
     pass
@@ -70,7 +72,7 @@ class Event(Base):
         ).first()
 
         if not is_accepted:
-            raise ValueError("Participant must accept the invitation before becoming an owner.")
+            raise RecordUpdateNotAllowedError(message="Participant must accept the invitation before becoming an owner.")
 
         if participant not in self.owners:
             self.owners.append(participant)

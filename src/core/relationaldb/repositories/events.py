@@ -5,7 +5,8 @@ from uuid import uuid4
 from asyncpg import Connection
 from pydantic import EmailStr
 
-from src.api.schemas import EventLocationRead, EventParticipantRead, EventRead
+from src.core.relationaldb.models.schemas import EventLocationRead, EventParticipantRead, EventRead
+from src.core.relationaldb.repositories.exceptions import NoRecordFoundError
 
 
 async def create_event_with_owner(conn: Connection, name: str, owner_email: EmailStr) -> uuid.UUID:
@@ -69,7 +70,7 @@ async def get_event_by_id(conn: Connection, event_id: uuid.UUID) -> EventRead:
     event_row = await conn.fetchrow(query, str(event_id))
 
     if not event_row:
-        raise ValueError(f"Event with id {event_id} not found")
+        raise NoRecordFoundError(message=f"Event with id {event_id} not found")
 
     participants_query = """
         SELECT p.id, p.name, p.email
@@ -87,7 +88,7 @@ async def get_event_by_id(conn: Connection, event_id: uuid.UUID) -> EventRead:
     location_rows = await conn.fetch(locations_query, str(event_id))
 
     return EventRead(
-        id=event_row["id"],  # asyncpg już zwraca UUID
+        id=event_row["id"],
         name=event_row["name"],
         opened_at=event_row["opened_at"],
         closed_at=event_row["closed_at"],
@@ -97,7 +98,7 @@ async def get_event_by_id(conn: Connection, event_id: uuid.UUID) -> EventRead:
         ],
         locations=[
             EventLocationRead(
-                id=row["id"],  # też UUID już jest
+                id=row["id"],
                 name=row["name"],
                 entered_at=row["entered_at"],
                 exited_at=row["exited_at"]

@@ -6,6 +6,11 @@ from psycopg2 import pool
 from psycopg2.extras import RealDictCursor
 
 from src.config.config import POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_POOL_SIZE, POSTGRES_USER
+from src.core.relationaldb.psycopg2_con.exceptions import (
+    ConnectionNotEstablishedError,
+    InvalidConnectorModeError,
+    PoolNotInitializedError,
+)
 
 
 class BasePGConnector(ABC):
@@ -41,13 +46,13 @@ class SyncPGConnector(BasePGConnector):
 
     def get_pool(self):
         if not self._connection_pool:
-            raise Exception("Call connect() first.")
+            raise ConnectionNotEstablishedError("Sync connector not connected.")
         return self._connection_pool
 
     @contextmanager
     def get_connection(self):
         if self._connection_pool is None:
-            raise RuntimeError("Connection pool has not been initialized.")
+            raise PoolNotInitializedError("Sync connection pool is not initialized.")
         conn = self._connection_pool.getconn()
         try:
             yield conn
@@ -84,13 +89,13 @@ class AsyncPGConnector(BasePGConnector):
 
     def get_pool(self):
         if not self._pool:
-            raise Exception("Call connect() first.")
+            raise ConnectionNotEstablishedError("Async connector not connected.")
         return self._pool
 
     @asynccontextmanager
     async def get_connection(self):
         if self._pool is None:
-            raise RuntimeError("Connection pool has not been initialized.")
+            raise PoolNotInitializedError("Async connection pool is not initialized.")
         async with self._pool.acquire() as conn:
             yield conn
 
@@ -105,4 +110,4 @@ def get_pg_connector(mode: str = "sync") -> SyncPGConnector | AsyncPGConnector:
     elif mode == "async":
         return AsyncPGConnector()
     else:
-        raise ValueError("Unknown connector mode. Use 'sync' or 'async'.")
+        raise InvalidConnectorModeError(mode)

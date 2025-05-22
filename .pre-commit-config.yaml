@@ -3,7 +3,6 @@ repos:
     rev: 0.7.6
     hooks:
       - id: uv-lock
-        exclude: ^src/core/relationaldb/migration_alembic/migrations/.*
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -17,7 +16,6 @@ repos:
     rev: v0.11.10
     hooks:
       - id: ruff
-        exclude: ^src/core/relationaldb/migration_alembic/migrations/.*
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.15.0
@@ -25,11 +23,11 @@ repos:
       - id: mypy
         name: MyPy
         args: ["--config-file", "pyproject.toml"]
-        exclude: ^src/core/relationaldb/migration_alembic/migrations/.*
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
       - id: codespell
         files: ^.*\.(py|c|h|md|rst|yml)$
-        exclude: ^src/core/relationaldb/migration_alembic/migrations/.*
+
+exclude: ^src/core/relationaldb/migration_alembic/migrations/.*

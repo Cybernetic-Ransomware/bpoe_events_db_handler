@@ -3,13 +3,13 @@ import uuid
 from asyncpg import Connection
 from fastapi import APIRouter, Depends
 
+from core.relationaldb.psycopg2_con.repositories.events import create_event_with_owner, get_event_by_id
 from src.api.dependencies import get_mongo_connector, get_pg_connector
-from src.api.exceptions import NoRecordFoundError
 from src.config.conf_logger import setup_logger
 from src.core.documentstorage.models import OCRedImageResult, OCROnlyResult
 from src.core.documentstorage.utils import MongoConnector
+from src.core.relationaldb.exceptions import NoRecordFoundError
 from src.core.relationaldb.models.schemas import EventCreateIn, EventRead
-from src.core.relationaldb.repositories.events import create_event_with_owner, get_event_by_id
 
 logger = setup_logger(__name__, "api")
 

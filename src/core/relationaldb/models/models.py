@@ -9,7 +9,7 @@ from sqlalchemy import Boolean, DateTime, ForeignKey, PrimaryKeyConstraint, Stri
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-from src.core.relationaldb.models.exceptions import RecordUpdateNotAllowedError
+from src.core.relationaldb.exceptions import RecordUpdateNotAllowedError
 
 
 class Base(DeclarativeBase):

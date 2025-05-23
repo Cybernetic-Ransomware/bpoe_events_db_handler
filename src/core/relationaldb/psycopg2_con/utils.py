@@ -5,12 +5,12 @@ import asyncpg
 from psycopg2 import pool
 from psycopg2.extras import RealDictCursor
 
-from src.config.config import POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_POOL_SIZE, POSTGRES_USER
-from src.core.relationaldb.psycopg2_con.exceptions import (
+from core.relationaldb.exceptions import (
     ConnectionNotEstablishedError,
     InvalidConnectorModeError,
     PoolNotInitializedError,
 )
+from src.config.config import POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_POOL_SIZE, POSTGRES_USER
 
 
 class BasePGConnector(ABC):

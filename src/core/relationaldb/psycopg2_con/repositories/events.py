@@ -5,8 +5,8 @@ from uuid import uuid4
 from asyncpg import Connection
 from pydantic import EmailStr
 
+from core.relationaldb.exceptions import NoRecordFoundError
 from src.core.relationaldb.models.schemas import EventLocationRead, EventParticipantRead, EventRead
-from src.core.relationaldb.repositories.exceptions import NoRecordFoundError
 
 
 async def create_event_with_owner(conn: Connection, name: str, owner_email: EmailStr) -> uuid.UUID:

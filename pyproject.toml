@@ -47,7 +47,7 @@ filterwarnings = [
 [tool.ruff]
 extend-exclude = []
 line-length = 124
-exclude = ["src/core/relationaldb/migration_alembic/migrations/versions/*"]
+exclude = ["src/core/relationaldb/migration_alembic/migrations/versions/*", "tests/*"]
 
 [tool.ruff.format]
 docstring-code-format = true

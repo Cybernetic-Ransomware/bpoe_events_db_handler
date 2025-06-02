@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="7.072" timestamp="2025-06-02T15:52:51.854394+02:00" hostname="CL1044-POZ-AM"><testcase classname="tests.test_main" name="test_docs_endpoint" time="5.966" /></testsuite></testsuites>

@@ -23,6 +23,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "codespell>=2.4.1",
+    "dotenv>=0.9.9",
     "httpx>=0.28.1",
     "mypy>=1.15.0",
     "pre-commit>=4.2.0",

@@ -15,13 +15,14 @@ dependencies = [
     "pydantic[email]>=2.11.3",
     "pymongo>=4.12.0",
     "python-decouple>=3.8",
+    "shapely>=2.1.0",
     "sqlalchemy>=2.0.40",
-    "sqlmodel>=0.0.24",
     "uvicorn[standard]>=0.34.1",
 ]
 
 [dependency-groups]
 dev = [
+    "codespell>=2.4.1",
     "httpx>=0.28.1",
     "mypy>=1.15.0",
     "pre-commit>=4.2.0",
@@ -46,6 +47,7 @@ filterwarnings = [
 [tool.ruff]
 extend-exclude = []
 line-length = 124
+exclude = ["src/core/relationaldb/migration_alembic/migrations/versions/*"]
 
 [tool.ruff.format]
 docstring-code-format = true
@@ -57,11 +59,27 @@ select = ["E", "F", "UP", "B", "SIM", "I"]
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["F401", "F841"]
 "test_*.py" = ["F401", "F841"]
+"src/core/relationaldb/migration_alembic/migrations/env.py" = ["SIM103", "F401", "SIM10"]
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends", "fastapi.Query", "fastapi.params.Query"]
 
 [tool.mypy]
 files = ["src"]
-exclude = ["tests/", "migrations/"]
+exclude = [
+    "tests/",
+    "migrations/",
+    "src/core/relationaldb/migration_alembic/migrations/"
+]
 ignore_missing_imports = true
+
+[tool.codespell]
+skip = """
+./.git,
+./.github,
+./tests/.*,
+./temp/.*,
+./log/.*,
+"""
+builtin = "clear"
+quiet-level = 3

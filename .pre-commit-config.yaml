@@ -1,23 +1,19 @@
-default_install_hook_types:
-  - pre-commit
-  - post-merge
-
 repos:
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.6.14
+    rev: 0.7.6
     hooks:
       - id: uv-lock
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
-    - id: trailing-whitespace
-    - id: check-json
-    - id: check-toml
-    - id: check-yaml
+      - id: trailing-whitespace
+      - id: check-json
+      - id: check-toml
+      - id: check-yaml
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.6
+    rev: v0.11.10
     hooks:
       - id: ruff
 
@@ -26,4 +22,12 @@ repos:
     hooks:
       - id: mypy
         name: MyPy
-        args: ["--config-file", "pyproject.toml", ]
+        args: ["--config-file", "pyproject.toml"]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        files: ^.*\.(py|c|h|md|rst|yml)$
+
+exclude: ^src/core/relationaldb/migration_alembic/migrations/.*

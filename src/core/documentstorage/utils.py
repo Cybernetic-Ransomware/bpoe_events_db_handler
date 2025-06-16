@@ -1,6 +1,9 @@
+from typing import Any
+
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from pymongo import MongoClient
+from pymongo.database import Database
 from pymongo.errors import CollectionInvalid, ServerSelectionTimeoutError
-from motor.motor_asyncio import AsyncIOMotorClient
 
 from src.config.conf_logger import setup_logger
 from src.config.config import DEBUG, MONGO_COLLECTION, MONGO_DB, MONGO_POOL_SIZE, MONGO_READER_URI
@@ -16,7 +19,7 @@ mongo_client: MongoClient = MongoClient(
     minPoolSize=MONGO_POOL_SIZE[0],
 )
 
-mongo_async_client = AsyncIOMotorClient(
+mongo_async_client: AsyncIOMotorClient = AsyncIOMotorClient(
     MONGO_READER_URI,
     maxPoolSize=MONGO_POOL_SIZE[1],
     minPoolSize=MONGO_POOL_SIZE[0],
@@ -27,7 +30,7 @@ class MongoConnector:
     def __init__(self, mongo_db: str = MONGO_DB, mongo_collection: str = MONGO_COLLECTION):
         self.mongo_db = mongo_db
         self.mongo_collection = mongo_collection
-        self.database = mongo_client[self.mongo_db]
+        self.database: Database[Any] = mongo_client[self.mongo_db]
 
     def _perform_startup_checks(self):
         logger.info("Performing MongoDB startup checks...")
@@ -97,9 +100,9 @@ class MongoConnector:
 class MongoAsynchConnector(MongoConnector):
     def __init__(self, mongo_db: str = MONGO_DB, mongo_collection: str = MONGO_COLLECTION):
         super().__init__(mongo_db, mongo_collection)
-        self.database = mongo_async_client[self.mongo_db]
+        self.database: AsyncIOMotorDatabase = mongo_async_client[self.mongo_db]  # type: ignore[assignment]
 
-    async def get_ocr_result(self, image_name: str, user_email: str) -> list[str]:
+    async def get_ocr_result(self, image_name: str, user_email: str) -> list[str]:  # type: ignore[override]
         try:
             collection = self.database[self.mongo_collection]  # type: ignore[index]
             document = await collection.find_one({"filename": image_name})

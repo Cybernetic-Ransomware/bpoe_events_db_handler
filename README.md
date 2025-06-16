@@ -158,3 +158,8 @@ Example file to insert into MongoDB:
 - Mongo Compass winget command [winget](https://winget.run/pkg/MongoDB/Compass.Full)
 - MongoDB Asynch Connector [Motor](https://motor.readthedocs.io/en/stable/tutorial-asyncio.html)
 - Async_postgres guide [Neon](https://neon.tech/guides/fastapi-async)
+
+- API Gateway microservice: [GitHub](https://github.com/Cybernetic-Ransomware/bpoe-api-gateway.git)
+- Databases handler microservice: [GitHub](https://github.com/Cybernetic-Ransomware/bpoe_events_db_handler)
+- OCR microservice: [GitHub](https://github.com/Cybernetic-Ransomware/bpoe-ocr)
+- Reports microservice: [GitHub](https://github.com/Cybernetic-Ransomware/bpoe_events_reports)

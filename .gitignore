@@ -157,6 +157,7 @@ cython_debug/
 
 # tests output
 /result/
+tests/result/
 
 # logs
 /log/*

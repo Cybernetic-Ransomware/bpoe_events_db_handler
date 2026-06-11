@@ -1,0 +1,27 @@
+# Normalize text files to LF on checkout/checkin
+* text eol=lf
+
+# Binary files — prevent line ending conversion
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.bmp binary
+*.tiff binary
+*.tif binary
+*.gif binary
+*.ico binary
+*.pdf binary
+
+# Extra explicit rules for common text file types
+*.py text eol=lf
+*.toml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.lock text eol=lf
+*.sh text eol=lf
+*.sql text eol=lf
+*.js text eol=lf
+Dockerfile text eol=lf
+justfile text eol=lf

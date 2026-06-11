@@ -37,26 +37,15 @@ async def create_event_with_owner(conn: Connection, name: str, owner_email: Emai
         participant_id = participant_record["id"]
     else:
         participant_id = uuid4()
-        await conn.fetchrow(
-            INSERT_PARTICIPANT_SQL,
-            participant_id,
-            owner_email,
-            owner_email.split('@')[0]
-        )
+        await conn.fetchrow(INSERT_PARTICIPANT_SQL, participant_id, owner_email, owner_email.split("@")[0])
 
-    insert_event = await conn.fetchrow(
-        INSERT_EVENT_SQL,
-        event_id,
-        name,
-        datetime.now()
-    )
+    insert_event = await conn.fetchrow(INSERT_EVENT_SQL, event_id, name, datetime.now())
     event_id = insert_event["id"]
 
     await conn.execute(INSERT_PARTICIPANT_ASSOCIATION_SQL, event_id, participant_id)
     await conn.execute(INSERT_OWNER_SQL, event_id, participant_id)
 
     return event_id
-
 
 
 async def get_event_by_id(conn: Connection, event_id: uuid.UUID) -> EventRead:
@@ -93,16 +82,9 @@ async def get_event_by_id(conn: Connection, event_id: uuid.UUID) -> EventRead:
         opened_at=event_row["opened_at"],
         closed_at=event_row["closed_at"],
         owner_id=event_row["owner_id"],
-        participants=[
-            EventParticipantRead(**dict(row)) for row in participant_rows
-        ],
+        participants=[EventParticipantRead(**dict(row)) for row in participant_rows],
         locations=[
-            EventLocationRead(
-                id=row["id"],
-                name=row["name"],
-                entered_at=row["entered_at"],
-                exited_at=row["exited_at"]
-            )
+            EventLocationRead(id=row["id"], name=row["name"], entered_at=row["entered_at"], exited_at=row["exited_at"])
             for row in location_rows
-        ]
+        ],
     )

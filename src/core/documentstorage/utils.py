@@ -14,7 +14,7 @@ logger = setup_logger(__name__, "documentstorage")
 
 mongo_client: MongoClient = MongoClient(
     MONGO_READER_URI,
-    uuidRepresentation='standard',
+    uuidRepresentation="standard",
     maxPoolSize=MONGO_POOL_SIZE[1],
     minPoolSize=MONGO_POOL_SIZE[0],
 )
@@ -65,16 +65,11 @@ class MongoConnector:
             result = self.database.command("usersInfo", {"forAllDBs": False})
             roles = result.get("users", [])[0].get("roles", [])
 
-            forbidden_roles = {
-                "dbAdmin", "userAdmin", "readWriteAnyDatabase",
-                "dbOwner", "root", "clusterAdmin"
-            }
+            forbidden_roles = {"dbAdmin", "userAdmin", "readWriteAnyDatabase", "dbOwner", "root", "clusterAdmin"}
 
             for role in roles:
                 if role["role"] in forbidden_roles or role["role"].endswith("Admin"):
-                    raise MongoDBConnectorError(
-                        message=f"User role not allowed: {role['role']} on the base: {role['db']}"
-                    )
+                    raise MongoDBConnectorError(message=f"User role not allowed: {role['role']} on the base: {role['db']}")
         except Exception as e:
             logger.error(f"Error during getting user role: {e}")
             raise MongoDBConnectorError(message="Error during getting user role") from e
@@ -102,7 +97,7 @@ class MongoAsynchConnector(MongoConnector):
         super().__init__(mongo_db, mongo_collection)
         self.database: AsyncIOMotorDatabase = mongo_async_client[self.mongo_db]  # type: ignore[assignment]
 
-    async def get_ocr_result(self, image_name: str, user_email: str) -> list[str]:  # type: ignore[override]
+    async def get_ocr_result(self, image_name: str, user_email: str) -> list[str]:  # ty: ignore[invalid-method-override]
         try:
             collection = self.database[self.mongo_collection]  # type: ignore[index]
             document = await collection.find_one({"filename": image_name})
@@ -152,16 +147,11 @@ class MongoAsynchConnector(MongoConnector):
             result = await self.database.command("usersInfo", {"forAllDBs": False})
             roles = result.get("users", [])[0].get("roles", [])
 
-            forbidden_roles = {
-                "dbAdmin", "userAdmin", "readWriteAnyDatabase",
-                "dbOwner", "root", "clusterAdmin"
-            }
+            forbidden_roles = {"dbAdmin", "userAdmin", "readWriteAnyDatabase", "dbOwner", "root", "clusterAdmin"}
 
             for role in roles:
                 if role["role"] in forbidden_roles or role["role"].endswith("Admin"):
-                    raise MongoDBConnectorError(
-                        message=f"User role not allowed: {role['role']} on the base: {role['db']}"
-                    )
+                    raise MongoDBConnectorError(message=f"User role not allowed: {role['role']} on the base: {role['db']}")
         except Exception as e:
             logger.error(f"Error during getting user role: {e}")
             raise MongoDBConnectorError(message="Error during getting user role") from e

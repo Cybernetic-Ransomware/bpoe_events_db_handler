@@ -1,49 +1,60 @@
 [project]
 name = "bpoe-events-db-handler"
 version = "0.1.0"
-description = "Placeholder"
-requires-python = ">=3.12.10"
+description = "Database handler microservice for the BPOE ecosystem — manages PostgreSQL (TimescaleDB) and MongoDB."
+authors = [{ name = "aleksander.marszalkiewicz" }]
+license = "Apache-2.0"
+requires-python = ">=3.14"
 dependencies = [
     "alembic>=1.15.2",
     "asyncpg>=0.30.0",
     "fastapi>=0.115.12",
-    "geoalchemy2>=0.17.1",
     "motor>=3.7.0",
     "pendulum>=3.1.0",
-    "psycopg2>=2.9.10",
-    "psycopg2-binary>=2.9.10",
+    "psycopg[binary]>=3.2.0",
     "pydantic[email]>=2.11.3",
     "pymongo>=4.12.0",
     "python-decouple>=3.8",
-    "shapely>=2.1.0",
     "sqlalchemy>=2.0.40",
-    "uvicorn[standard]>=0.34.1",
+    "uvicorn>=0.34.1",
 ]
 
 [dependency-groups]
 dev = [
-    "codespell>=2.4.1",
-    "dotenv>=0.9.9",
+    "bandit>=1.9.4",
+    "codespell>=2.4.2",
+    "commitizen>=4.16.2",
     "httpx>=0.28.1",
-    "mypy>=1.15.0",
     "pre-commit>=4.2.0",
     "pytest>=8.3.5",
     "pytest-asyncio>=0.26.0",
     "pytest-cov>=6.1.1",
     "ruff>=0.11.6",
+    "testcontainers>=4.14.2",
+    "ty==0.0.38",
 ]
 
-[tool.pytest]
-pythonpath = "./src"
-
 [tool.pytest.ini_options]
-addopts = "--junitxml=./result/pytest_result.xml --cov=src --cov-report html:result/html"
+pythonpath = [".", "src"]
+addopts = ["--junitxml=./result/pytest_result.xml", "--cov=src", "--cov-report=html:result/html"]
+asyncio_mode = "auto"
+markers = [
+    "unit: fast isolated unit tests (no external services)",
+    "integration: tests that require external services — run with -m integration",
+    "regression: regression tests for known bugs",
+]
 filterwarnings = [
     "ignore::UserWarning",
     'ignore:function ham\(\) is deprecated:DeprecationWarning',
     "ignore:module 'sre_constants' is deprecated:DeprecationWarning",
     "ignore::SyntaxWarning",
+    "ignore::pydantic.warnings.PydanticDeprecatedSince20",
+    "ignore:'asyncio.*' is deprecated:DeprecationWarning:pytest_asyncio",
+    "ignore:'asyncio.*' is deprecated:DeprecationWarning:fastapi",
 ]
+
+[tool.coverage.run]
+data_file = "result/.coverage"
 
 [tool.ruff]
 extend-exclude = []
@@ -65,22 +76,56 @@ select = ["E", "F", "UP", "B", "SIM", "I"]
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends", "fastapi.Query", "fastapi.params.Query"]
 
-[tool.mypy]
-files = ["src"]
-exclude = [
-    "tests/",
-    "migrations/",
-    "src/core/relationaldb/migration_alembic/migrations/"
-]
-ignore_missing_imports = true
+[tool.ty.environment]
+extra-paths = ["src"]
+
+[tool.ty.src]
+exclude = ["tests/*"]
 
 [tool.codespell]
-skip = """
-./.git,
-./.github,
-./tests/.*,
-./temp/.*,
-./log/.*,
-"""
+skip = "./.git,./.github,./tests,./log,./result"
 builtin = "clear"
 quiet-level = 3
+
+[tool.bandit]
+targets = ["src"]
+exclude_dirs = ["tests"]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.1.0"
+tag_format = "v$version"
+version_files = [
+    "pyproject.toml:version",
+]
+change_type_order = ["feat", "fix", "hotfix", "chore", "docs", "refactor", "test"]
+
+schema_pattern = "(build|chore|ci|docs|feature|feat|fix|hotfix|perf|refactor|style|test|config)(\\(.+\\))?!?: .+"
+
+[tool.commitizen.schema_mapping]
+feature = "feat"
+hotfix = "fix"
+config = "chore"
+
+[[tool.commitizen.customize.questions]]
+type = "list"
+name = "type"
+message = "Prefix?"
+choices = [
+    { value = "feat", name = "feature" },
+    { value = "fix", name = "hotfix" },
+    { value = "chore", name = "config" },
+    { value = "refactor", name = "refactor" },
+    { value = "docs", name = "docs" },
+    { value = "test", name = "tests" },
+    { value = "chore", name = "chore/other" },
+]
+
+[tool.commitizen.change_type_map]
+feat = "Features"
+fix = "Bug Fixes"
+hotfix = "Hotfixes"
+chore = "Chores"
+docs = "Documentation"
+refactor = "Refactors"
+test = "Tests"

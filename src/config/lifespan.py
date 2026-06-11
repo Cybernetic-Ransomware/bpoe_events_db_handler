@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
 
     pgpool_connector: AsyncPGConnector | None = None
     try:
-        pgpool_connector = cast(AsyncPGConnector, get_pg_connector(mode='async'))
+        pgpool_connector = cast(AsyncPGConnector, get_pg_connector(mode="async"))
         logger.info("Connecting to PostgreSQL...")
         await pgpool_connector.connect()
         logger.info("PostgreSQL pool connection initiated.")

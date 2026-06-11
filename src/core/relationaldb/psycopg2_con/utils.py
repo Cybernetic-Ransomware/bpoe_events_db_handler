@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager, contextmanager
 
 import asyncpg
-from psycopg2 import pool
-from psycopg2.extras import RealDictCursor
+import psycopg
+from psycopg.rows import dict_row
 
 from core.relationaldb.exceptions import (
     ConnectionNotEstablishedError,
@@ -30,43 +30,30 @@ class BasePGConnector(ABC):
 class SyncPGConnector(BasePGConnector):
     def __init__(self):
         super().__init__()
-        self._connection_pool: pool.AbstractConnectionPool | None = None
+        self._dsn: str | None = None
 
     def connect(self):
-        if not self._connection_pool:
-            self._connection_pool = pool.SimpleConnectionPool(
-                minconn=self.pool_size[0],
-                maxconn=self.pool_size[1],
-                host=self.host,
-                port=self.port,
-                database=self.database,
-                user=self.user,
-                password=self.password
+        if not self._dsn:
+            self._dsn = (
+                f"host={self.host} port={self.port} dbname={self.database} user={self.user} password={self.password}"
             )
 
     def get_pool(self):
-        if not self._connection_pool:
+        if not self._dsn:
             raise ConnectionNotEstablishedError("Sync connector not connected.")
-        return self._connection_pool
+        return self._dsn
 
     @contextmanager
     def get_connection(self):
-        if self._connection_pool is None:
-            raise PoolNotInitializedError("Sync connection pool is not initialized.")
-        conn = self._connection_pool.getconn()
-        try:
+        if self._dsn is None:
+            raise PoolNotInitializedError("Sync connection not initialized.")
+        with psycopg.connect(self._dsn) as conn:
             yield conn
-        finally:
-            self._connection_pool.putconn(conn)
 
     @contextmanager
     def get_cursor(self):
-        with self.get_connection() as conn:
-            cursor = conn.cursor(cursor_factory=RealDictCursor)
-            try:
-                yield cursor
-            finally:
-                cursor.close()
+        with self.get_connection() as conn, conn.cursor(row_factory=dict_row) as cursor:
+            yield cursor
 
 
 class AsyncPGConnector(BasePGConnector):
@@ -84,7 +71,7 @@ class AsyncPGConnector(BasePGConnector):
                 database=self.database,
                 user=self.user,
                 password=self.password,
-                command_timeout=60
+                command_timeout=60,
             )
 
     def get_pool(self):

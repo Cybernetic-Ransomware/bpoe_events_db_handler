@@ -1,7 +1,7 @@
 from typing import Any
 
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
-from pymongo import MongoClient
+from pymongo import AsyncMongoClient, MongoClient
+from pymongo.asynchronous.database import AsyncDatabase
 from pymongo.database import Database
 from pymongo.errors import CollectionInvalid, ServerSelectionTimeoutError
 
@@ -19,7 +19,7 @@ mongo_client: MongoClient = MongoClient(
     minPoolSize=MONGO_POOL_SIZE[0],
 )
 
-mongo_async_client: AsyncIOMotorClient = AsyncIOMotorClient(
+mongo_async_client: AsyncMongoClient[Any] = AsyncMongoClient(
     MONGO_READER_URI,
     maxPoolSize=MONGO_POOL_SIZE[1],
     minPoolSize=MONGO_POOL_SIZE[0],
@@ -95,7 +95,7 @@ class MongoConnector:
 class MongoAsynchConnector(MongoConnector):
     def __init__(self, mongo_db: str = MONGO_DB, mongo_collection: str = MONGO_COLLECTION):
         super().__init__(mongo_db, mongo_collection)
-        self.database: AsyncIOMotorDatabase = mongo_async_client[self.mongo_db]  # type: ignore[assignment]
+        self.database: AsyncDatabase[Any] = mongo_async_client[self.mongo_db]
 
     async def get_ocr_result(self, image_name: str, user_email: str) -> list[str]:  # ty: ignore[invalid-method-override]
         try:

@@ -11,7 +11,7 @@ The purpose of this project is to build a handler for main db.
 - accessible only via a gateway connection.
 
 ## Requirements
-- Python >=3.12 with [uv](https://docs.astral.sh/uv/) package manager
+- Python >=3.14 with [uv](https://docs.astral.sh/uv/) package manager
 - Docker Desktop / Docker + Compose
 - [just](https://just.systems/) task runner
 

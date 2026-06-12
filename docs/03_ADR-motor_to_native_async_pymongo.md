@@ -46,9 +46,24 @@ Drop `motor` from `pyproject.toml` dependencies entirely.
   → ADR-02 marked Superseded; README updated; this ADR records the new baseline.
 - **Type annotations.** `AsyncDatabase[Any]` replaces `AsyncIOMotorDatabase` in type hints;
   a `# ty: ignore[invalid-method-override]` suppression remains on `get_ocr_result` due to
-  the sync/async override on the inherited `get_ocr_result` method until the class hierarchy
-  is refactored.
+  the sync/async override on the inherited `get_ocr_result` method.
+
+## Follow-up: factory functions and explicit client ownership
+
+After the initial migration the module held two global `MongoClient` / `AsyncMongoClient`
+instances created at import time. This made the clients invisible to dependency injection,
+prevented proper lifecycle management, and required test-suite workarounds (patching module
+globals). The following changes were applied as a follow-up:
+
+- `create_mongo_client(uri)` and `create_async_mongo_client(uri)` factory functions replace
+  the module-level singletons.
+- `MongoConnector` and `MongoAsynchConnector` constructors now accept the client as their
+  first argument, making the dependency explicit and injectable.
+- `lifespan` creates the `AsyncMongoClient` via `create_async_mongo_client()`, passes it to
+  `MongoAsynchConnector`, stores it under `app.state.mongo_client`, and closes it on shutdown.
+- Tests construct connectors directly with a testcontainer-backed client — no module patching
+  required for connector-level tests.
 
 ## Status
-_Accepted_ — implemented in `src/core/documentstorage/utils.py`.
+_Accepted_ — implemented in `src/core/documentstorage/utils.py` and `src/config/lifespan.py`.
 `pymongo>=4.17` is the baseline; `motor` is removed from all dependency manifests.

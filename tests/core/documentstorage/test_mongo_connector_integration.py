@@ -1,5 +1,4 @@
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock, patch
 
 import pytest
 from pymongo import AsyncMongoClient, MongoClient
@@ -42,10 +41,7 @@ def seeded_mongo(mongo_url: str):
 async def connector(mongo_url: str, seeded_mongo):
     """MongoAsynchConnector wired to the test container — new client per test."""
     client = AsyncMongoClient(mongo_url)
-    conn = MongoAsynchConnector.__new__(MongoAsynchConnector)
-    conn.mongo_db = _DB
-    conn.mongo_collection = _COL
-    conn.database = client[_DB]
+    conn = MongoAsynchConnector(client, mongo_db=_DB, mongo_collection=_COL)
     yield conn
     await client.close()
 
@@ -129,33 +125,23 @@ async def test_get_full_ocr_document_wrong_email_raises(connector: MongoAsynchCo
 
 @pytest.mark.integration
 async def test_perform_startup_checks_passes_with_valid_collection(mongo_url: str, seeded_mongo) -> None:
-    """Startup checks pass when the collection exists (DEBUG=True skips role check).
-    server_info() is patched because it uses the module-level global client, not self.database."""
+    """Startup checks pass against a real container when the collection exists.
+    DEBUG=True (set in tests/.env.test) skips role checks, so no mocks are needed."""
     client = AsyncMongoClient(mongo_url)
-    conn = MongoAsynchConnector.__new__(MongoAsynchConnector)
-    conn.mongo_db = _DB
-    conn.mongo_collection = _COL
-    conn.database = client[_DB]
+    conn = MongoAsynchConnector(client, mongo_db=_DB, mongo_collection=_COL)
     try:
-        with patch("src.core.documentstorage.utils.mongo_async_client") as mock_global:
-            mock_global.server_info = AsyncMock(return_value={"version": "8.0.0"})
-            await conn._perform_startup_checks()
+        await conn._perform_startup_checks()
     finally:
         await client.close()
 
 
 @pytest.mark.integration
 async def test_perform_startup_checks_fails_missing_collection(mongo_url: str, seeded_mongo) -> None:
-    """Startup checks raise when the collection does not exist."""
+    """Startup checks raise MongoDBConnectorError when the collection does not exist."""
     client = AsyncMongoClient(mongo_url)
-    conn = MongoAsynchConnector.__new__(MongoAsynchConnector)
-    conn.mongo_db = _DB
-    conn.mongo_collection = "nonexistent_collection"
-    conn.database = client[_DB]
+    conn = MongoAsynchConnector(client, mongo_db=_DB, mongo_collection="nonexistent_collection")
     try:
-        with patch("src.core.documentstorage.utils.mongo_async_client") as mock_global:
-            mock_global.server_info = AsyncMock(return_value={"version": "8.0.0"})
-            with pytest.raises(MongoDBConnectorError):
-                await conn._perform_startup_checks()
+        with pytest.raises(MongoDBConnectorError):
+            await conn._perform_startup_checks()
     finally:
         await client.close()

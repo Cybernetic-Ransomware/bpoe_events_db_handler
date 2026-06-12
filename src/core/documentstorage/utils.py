@@ -12,31 +12,40 @@ from src.core.documentstorage.exceptions import MongoDBConnectorError
 logger = setup_logger(__name__, "documentstorage")
 
 
-mongo_client: MongoClient = MongoClient(
-    MONGO_READER_URI,
-    uuidRepresentation="standard",
-    maxPoolSize=MONGO_POOL_SIZE[1],
-    minPoolSize=MONGO_POOL_SIZE[0],
-)
+def create_mongo_client(uri: str = MONGO_READER_URI) -> MongoClient:
+    return MongoClient(
+        uri,
+        uuidRepresentation="standard",
+        maxPoolSize=MONGO_POOL_SIZE[1],
+        minPoolSize=MONGO_POOL_SIZE[0],
+    )
 
-mongo_async_client: AsyncMongoClient[Any] = AsyncMongoClient(
-    MONGO_READER_URI,
-    uuidRepresentation="standard",
-    maxPoolSize=MONGO_POOL_SIZE[1],
-    minPoolSize=MONGO_POOL_SIZE[0],
-)
+
+def create_async_mongo_client(uri: str = MONGO_READER_URI) -> AsyncMongoClient[Any]:
+    return AsyncMongoClient(
+        uri,
+        uuidRepresentation="standard",
+        maxPoolSize=MONGO_POOL_SIZE[1],
+        minPoolSize=MONGO_POOL_SIZE[0],
+    )
 
 
 class MongoConnector:
-    def __init__(self, mongo_db: str = MONGO_DB, mongo_collection: str = MONGO_COLLECTION):
+    def __init__(
+        self,
+        client: MongoClient,
+        mongo_db: str = MONGO_DB,
+        mongo_collection: str = MONGO_COLLECTION,
+    ):
+        self._client = client
         self.mongo_db = mongo_db
         self.mongo_collection = mongo_collection
-        self.database: Database[Any] = mongo_client[self.mongo_db]
+        self.database: Database[Any] = client[mongo_db]
 
     def _perform_startup_checks(self):
         logger.info("Performing MongoDB startup checks...")
         try:
-            server_info = mongo_client.server_info()
+            server_info = self._client.server_info()
             logger.info(f"Successfully connected to MongoDB server version {server_info['version']}")
 
             if self.mongo_collection not in self.database.list_collection_names():
@@ -100,9 +109,16 @@ class MongoConnector:
 
 
 class MongoAsynchConnector(MongoConnector):
-    def __init__(self, mongo_db: str = MONGO_DB, mongo_collection: str = MONGO_COLLECTION):
-        super().__init__(mongo_db, mongo_collection)
-        self.database: AsyncDatabase[Any] = mongo_async_client[self.mongo_db]
+    def __init__(
+        self,
+        client: AsyncMongoClient[Any],
+        mongo_db: str = MONGO_DB,
+        mongo_collection: str = MONGO_COLLECTION,
+    ):
+        self._client: AsyncMongoClient[Any] = client
+        self.mongo_db = mongo_db
+        self.mongo_collection = mongo_collection
+        self.database: AsyncDatabase[Any] = client[mongo_db]
 
     async def get_ocr_result(self, image_name: str, user_email: str) -> list[str]:  # ty: ignore[invalid-method-override]
         try:
@@ -147,7 +163,7 @@ class MongoAsynchConnector(MongoConnector):
     async def _perform_startup_checks(self):
         logger.info("Performing MongoDB startup checks...")
         try:
-            server_info = await mongo_async_client.server_info()
+            server_info = await self._client.server_info()
             logger.info(f"Successfully connected to MongoDB server version {server_info['version']}")
 
             if self.mongo_collection not in await self.database.list_collection_names():

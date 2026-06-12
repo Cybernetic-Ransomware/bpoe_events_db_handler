@@ -56,7 +56,8 @@ async def lifespan(app: FastAPI):
         logger.info(f"Started with {DEBUG=}")
     yield  # Separates code before the application starts and after it stops
     try:
-        await app.state.postgres_pool.close_postgres()
+        if hasattr(app.state, "postgres_pool_connector"):
+            await app.state.postgres_pool_connector.close_postgres()
     except Exception as e:
         logger.critical(f"Failed to close postgres connection: {e}", exc_info=True)
     logger.info("Application shutdown...")

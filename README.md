@@ -180,7 +180,7 @@ Example file to insert into MongoDB:
 ## Useful links and documentation
 - Install TimescaleDB on Windows: [TimescaleDB](https://docs.timescale.com/self-hosted/latest/install/installation-windows/)
 - Mongo Compass winget command [winget](https://winget.run/pkg/MongoDB/Compass.Full)
-- MongoDB Asynch Connector [Motor](https://motor.readthedocs.io/en/stable/tutorial-asyncio.html)
+- MongoDB async driver [pymongo native async](https://www.mongodb.com/docs/languages/python/pymongo-driver/current/)
 - Async_postgres guide [Neon](https://neon.tech/guides/fastapi-async)
 
 - API Gateway microservice: [GitHub](https://github.com/Cybernetic-Ransomware/bpoe-api-gateway.git)

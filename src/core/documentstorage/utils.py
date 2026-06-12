@@ -21,6 +21,7 @@ mongo_client: MongoClient = MongoClient(
 
 mongo_async_client: AsyncMongoClient[Any] = AsyncMongoClient(
     MONGO_READER_URI,
+    uuidRepresentation="standard",
     maxPoolSize=MONGO_POOL_SIZE[1],
     minPoolSize=MONGO_POOL_SIZE[0],
 )
@@ -53,6 +54,8 @@ class MongoConnector:
 
             logger.info("MongoDB startup checks completed successfully.")
 
+        except MongoDBConnectorError:
+            raise
         except ServerSelectionTimeoutError as e:
             logger.error(f"MongoDB connection error during startup checks: {e}")
             raise MongoDBConnectorError(message=str(e) if DEBUG else "MongoDB connection failed") from e
@@ -70,6 +73,8 @@ class MongoConnector:
             for role in roles:
                 if role["role"] in forbidden_roles or role["role"].endswith("Admin"):
                     raise MongoDBConnectorError(message=f"User role not allowed: {role['role']} on the base: {role['db']}")
+        except MongoDBConnectorError:
+            raise
         except Exception as e:
             logger.error(f"Error during getting user role: {e}")
             raise MongoDBConnectorError(message="Error during getting user role") from e
@@ -87,9 +92,11 @@ class MongoConnector:
 
             return document.get("ocr_result", [])
 
+        except MongoDBConnectorError:
+            raise
         except Exception as e:
             logger.error(f"Failed to retrieve OCR result for '{image_name}': {e}")
-            raise MongoDBConnectorError(message=f"Failed to retrieve OCR data: {e}") from e
+            raise MongoDBConnectorError(message="Failed to retrieve OCR data") from e
 
 
 class MongoAsynchConnector(MongoConnector):
@@ -110,9 +117,32 @@ class MongoAsynchConnector(MongoConnector):
 
             return document.get("ocr_result", [])
 
+        except MongoDBConnectorError:
+            raise
         except Exception as e:
             logger.error(f"Failed to retrieve OCR result for '{image_name}': {e}")
-            raise MongoDBConnectorError(message=f"Failed to retrieve OCR data: {e}") from e
+            raise MongoDBConnectorError(message="Failed to retrieve OCR data") from e
+
+    async def get_full_ocr_document(self, image_name: str, user_email: str) -> dict[str, Any]:
+        try:
+            collection = self.database[self.mongo_collection]  # type: ignore[index]
+            document = await collection.find_one({"filename": image_name})
+
+            if document is None:
+                raise MongoDBConnectorError(message=f"No OCR result found for filename: {image_name}")
+
+            if document.get("user_email") != user_email:
+                raise MongoDBConnectorError(message="User email does not match the record owner.")
+
+            doc = dict(document)
+            doc.pop("_id", None)
+            return doc
+
+        except MongoDBConnectorError:
+            raise
+        except Exception as e:
+            logger.error(f"Failed to retrieve OCR document for '{image_name}': {e}")
+            raise MongoDBConnectorError(message="Failed to retrieve OCR data") from e
 
     async def _perform_startup_checks(self):
         logger.info("Performing MongoDB startup checks...")
@@ -135,6 +165,8 @@ class MongoAsynchConnector(MongoConnector):
 
             logger.info("MongoDB startup checks completed successfully.")
 
+        except MongoDBConnectorError:
+            raise
         except ServerSelectionTimeoutError as e:
             logger.error(f"MongoDB connection error during startup checks: {e}")
             raise MongoDBConnectorError(message=str(e) if DEBUG else "MongoDB connection failed") from e
@@ -152,6 +184,8 @@ class MongoAsynchConnector(MongoConnector):
             for role in roles:
                 if role["role"] in forbidden_roles or role["role"].endswith("Admin"):
                     raise MongoDBConnectorError(message=f"User role not allowed: {role['role']} on the base: {role['db']}")
+        except MongoDBConnectorError:
+            raise
         except Exception as e:
             logger.error(f"Error during getting user role: {e}")
             raise MongoDBConnectorError(message="Error during getting user role") from e

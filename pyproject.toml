@@ -50,6 +50,7 @@ filterwarnings = [
     "ignore::pydantic.warnings.PydanticDeprecatedSince20",
     "ignore:'asyncio.*' is deprecated:DeprecationWarning:pytest_asyncio",
     "ignore:'asyncio.*' is deprecated:DeprecationWarning:fastapi",
+    "ignore:coroutine 'AsyncMockMixin._execute_mock_call' was never awaited:RuntimeWarning",
 ]
 
 [tool.coverage.run]

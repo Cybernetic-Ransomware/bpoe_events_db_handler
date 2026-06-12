@@ -3,8 +3,8 @@ import uuid
 import asyncpg
 import pytest
 
-from core.relationaldb.exceptions import NoRecordFoundError
-from core.relationaldb.psycopg2_con.repositories.events import (
+from src.core.relationaldb.exceptions import NoRecordFoundError
+from src.core.relationaldb.psycopg2_con.repositories.events import (
     create_event_with_owner,
     get_event_by_id,
 )
@@ -65,3 +65,47 @@ async def test_get_event_by_id_raises_for_missing_event(pg_connection: asyncpg.C
     """get_event_by_id raises NoRecordFoundError when the event does not exist."""
     with pytest.raises(NoRecordFoundError):
         await get_event_by_id(pg_connection, uuid.uuid4())
+
+
+class _FailOnFirstExecute:
+    """Proxy that delegates all asyncpg methods to the real connection but raises on the first execute()."""
+
+    def __init__(self, conn: asyncpg.Connection) -> None:
+        self._conn = conn
+        self._executed = False
+
+    async def fetchrow(self, sql: str, *args):
+        return await self._conn.fetchrow(sql, *args)
+
+    async def fetch(self, sql: str, *args):
+        return await self._conn.fetch(sql, *args)
+
+    async def fetchval(self, sql: str, *args):
+        return await self._conn.fetchval(sql, *args)
+
+    async def execute(self, sql: str, *args):
+        if not self._executed:
+            self._executed = True
+            raise RuntimeError("simulated failure on first execute()")
+        return await self._conn.execute(sql, *args)
+
+    def transaction(self):
+        return self._conn.transaction()
+
+
+@pytest.mark.integration
+async def test_create_event_is_atomic(pg_connection: asyncpg.Connection) -> None:
+    """Failure on INSERT_PARTICIPANT_ASSOCIATION rolls back the participant and event rows too."""
+    participant_count_before = await pg_connection.fetchval("SELECT COUNT(*) FROM participant")
+    event_count_before = await pg_connection.fetchval("SELECT COUNT(*) FROM event")
+
+    proxy = _FailOnFirstExecute(pg_connection)
+
+    with pytest.raises(RuntimeError, match="simulated failure"):
+        await create_event_with_owner(proxy, "Should Roll Back", "rollback@example.com")  # type: ignore[arg-type]
+
+    participant_count_after = await pg_connection.fetchval("SELECT COUNT(*) FROM participant")
+    event_count_after = await pg_connection.fetchval("SELECT COUNT(*) FROM event")
+
+    assert participant_count_after == participant_count_before, "participant row should be rolled back on failure"
+    assert event_count_after == event_count_before, "event row should be rolled back on failure"

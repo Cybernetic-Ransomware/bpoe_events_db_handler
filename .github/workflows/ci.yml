@@ -56,6 +56,16 @@ jobs:
       - name: Run unit tests
         run: uv run pytest -m "not integration"
 
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-unit
+          path: |
+            result/html/
+            result/pytest_result.xml
+          retention-days: 14
+
   test-integration:
     name: Integration tests
     runs-on: ubuntu-latest
@@ -72,3 +82,31 @@ jobs:
 
       - name: Run integration tests
         run: uv run pytest -m integration
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-integration
+          path: |
+            result/html/
+            result/pytest_result.xml
+          retention-days: 14
+
+  docker-build:
+    name: Docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build app image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

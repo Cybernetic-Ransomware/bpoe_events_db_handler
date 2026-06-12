@@ -114,7 +114,7 @@ class EventLocation(Base):
     entered_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     exited_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), nullable=False)
+    event_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("event.id"), nullable=False)
     event: Mapped[Event] = relationship(back_populates="locations")
 
     # __table_args__ = (
@@ -126,9 +126,9 @@ class EventTransaction(Base):
     __tablename__ = "eventtransaction"
     __table_args__ = (PrimaryKeyConstraint("id", "timestamp"),)
 
-    id: Mapped[int] = mapped_column()
-    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), nullable=False)
-    participant_id: Mapped[int] = mapped_column(ForeignKey("participant.id"), nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), default=uuid.uuid4, nullable=False)
+    event_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("event.id"), nullable=False)
+    participant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("participant.id"), nullable=False)
 
     amount: Mapped[float] = mapped_column(nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=True)

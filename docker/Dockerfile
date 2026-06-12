@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM python:3.12.10-alpine3.21 AS builder
+FROM python:3.14-alpine AS builder
 
 WORKDIR /src
 
@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=/root/.cache/uv,sharing=locked \
     uv sync --no-group dev
 
 
-FROM python:3.12.10-alpine3.21 AS runtime
+FROM python:3.14-alpine AS runtime
 LABEL authors="aleksander.marszalki"
 LABEL name="bpoe-events-db-handler"
 

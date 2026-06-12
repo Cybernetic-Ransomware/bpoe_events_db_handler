@@ -24,6 +24,7 @@ dev = [
     "codespell>=2.4.2",
     "commitizen>=4.16.3",
     "httpx>=0.28.1",
+    "pip-audit>=2.9.0",
     "pre-commit>=4.6.0",
     "pytest>=9.0.3",
     "pytest-asyncio>=1.4.0",

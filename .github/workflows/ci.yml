@@ -39,6 +39,9 @@ jobs:
       - name: bandit security check
         run: uv run bandit -r src/ -c pyproject.toml -q
 
+      - name: pip-audit dependency scan
+        run: uv run pip-audit
+
   test:
     name: Unit tests
     runs-on: ubuntu-latest

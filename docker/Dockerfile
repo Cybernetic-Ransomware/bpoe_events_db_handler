@@ -1,20 +1,22 @@
-FROM python:3.12.10-alpine3.21 AS builder
+# syntax=docker/dockerfile:1.7
+FROM python:3.14-alpine AS builder
 
 WORKDIR /src
 
 RUN apk update && apk add --no-cache postgresql-dev gcc musl-dev
 
-RUN python -m pip install --upgrade pip --break-system-packages && \
-    pip install uv --break-system-packages
+RUN pip install uv --break-system-packages
 
 COPY ./pyproject.toml ./uv.lock ./
 
-RUN uv sync --no-cache --no-group dev
+ENV UV_PYTHON_PREFERENCE=only-system
+RUN --mount=type=cache,target=/root/.cache/uv,sharing=locked \
+    uv sync --no-group dev
 
 
-FROM python:3.12.10-alpine3.21 AS runtime
+FROM python:3.14-alpine AS runtime
 LABEL authors="aleksander.marszalki"
-LABEL name="bpoe-ocr"
+LABEL name="bpoe-events-db-handler"
 
 RUN apk update && apk add --no-cache postgresql-dev gcc musl-dev
 
@@ -24,21 +26,18 @@ ENV PATH="/src/.venv/bin:/usr/local/bin:$PATH"
 
 WORKDIR /src
 
-COPY --chown=appuser:appgroup ./src .
 COPY --from=builder --chown=appuser:appgroup /src/.venv /src/.venv
+COPY --chown=appuser:appgroup ./src .
 RUN chmod -R +x /src/.venv/bin/
 
 RUN mkdir /log && chown appuser:appgroup /log
 
-COPY ../docker/init_alembic.sh /src/init_alembic.sh
+COPY ./docker/init_alembic.sh /src/init_alembic.sh
 RUN chmod +x /src/init_alembic.sh
 
 USER appuser
 
 EXPOSE 8080/tcp
 
-USER appuser
-
-#CMD ["tail", "-f"]
 ENTRYPOINT ["/src/init_alembic.sh"]
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

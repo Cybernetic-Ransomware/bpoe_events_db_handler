@@ -67,5 +67,6 @@ async contexts using tools like pytest-asyncio.
 eased by similarity to PyMongo and targeted internal documentation.
 
 ## Status
-_Accepted_ — this decision applies to all MongoDB-related operations within the application.
-The migration will proceed incrementally, starting with the OCR-related functionality.
+_Superseded by [ADR-03](03_ADR-motor_to_native_async_pymongo.md)_ — the Motor driver described
+here was subsequently replaced by the native async interface introduced in `pymongo>=4.13`.
+The goal (async-first MongoDB access) remains unchanged; only the library changed.

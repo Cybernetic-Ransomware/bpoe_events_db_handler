@@ -1,11 +1,10 @@
 from contextlib import asynccontextmanager
-from typing import cast
 
 from fastapi import FastAPI
 
 from src.config.conf_logger import setup_logger
 from src.config.config import DEBUG, MONGO_COLLECTION, MONGO_DB
-from src.core.documentstorage.utils import MongoAsynchConnector
+from src.core.documentstorage.utils import MongoAsynchConnector, create_async_mongo_client
 from src.core.relationaldb.migration_alembic.utils import ensure_hypertables
 from src.core.relationaldb.psycopg2_con.utils import AsyncPGConnector, get_pg_connector
 
@@ -17,9 +16,11 @@ async def lifespan(app: FastAPI):
     logger.info("Application startup...")
 
     try:
-        connector = MongoAsynchConnector(mongo_db=MONGO_DB, mongo_collection=MONGO_COLLECTION)
+        mongo_client = create_async_mongo_client()
+        connector = MongoAsynchConnector(mongo_client, mongo_db=MONGO_DB, mongo_collection=MONGO_COLLECTION)
         await connector._perform_startup_checks()
         app.state.mongo_connector = connector
+        app.state.mongo_client = mongo_client
 
     except Exception as e:
         logger.critical(f"Failed to initialize MongoDB connector during startup: {e}", exc_info=True)
@@ -27,7 +28,7 @@ async def lifespan(app: FastAPI):
 
     pgpool_connector: AsyncPGConnector | None = None
     try:
-        pgpool_connector = cast(AsyncPGConnector, get_pg_connector(mode='async'))
+        pgpool_connector = get_pg_connector()
         logger.info("Connecting to PostgreSQL...")
         await pgpool_connector.connect()
         logger.info("PostgreSQL pool connection initiated.")
@@ -56,7 +57,13 @@ async def lifespan(app: FastAPI):
         logger.info(f"Started with {DEBUG=}")
     yield  # Separates code before the application starts and after it stops
     try:
-        await app.state.postgres_pool.close_postgres()
+        if hasattr(app.state, "mongo_client"):
+            await app.state.mongo_client.close()
+    except Exception as e:
+        logger.critical(f"Failed to close MongoDB client: {e}", exc_info=True)
+    try:
+        if hasattr(app.state, "postgres_pool_connector"):
+            await app.state.postgres_pool_connector.close_postgres()
     except Exception as e:
         logger.critical(f"Failed to close postgres connection: {e}", exc_info=True)
     logger.info("Application shutdown...")

@@ -5,24 +5,30 @@ from pydantic import BaseModel, EmailStr, Field
 
 # ---------- EVENT LOCATION ----------
 
+
 class EventLocationRead(BaseModel):
     id: uuid.UUID
     name: str
     entered_at: datetime | None
     exited_at: datetime | None
 
+
 # ---------- PARTICIPANT ----------
+
 
 class EventParticipantRead(BaseModel):
     id: uuid.UUID
     name: str
     email: EmailStr
 
+
 # ---------- EVENT ----------
+
 
 class EventCreateIn(BaseModel):
     name: str
     owner_email: EmailStr
+
 
 class EventRead(BaseModel):
     id: uuid.UUID

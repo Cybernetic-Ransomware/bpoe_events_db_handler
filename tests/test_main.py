@@ -2,7 +2,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 
-@pytest.mark.asyncio
+@pytest.mark.unit
 async def test_docs_endpoint(app):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://testserver") as client:

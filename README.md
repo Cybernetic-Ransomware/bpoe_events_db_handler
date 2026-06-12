@@ -11,20 +11,35 @@ The purpose of this project is to build a handler for main db.
 - accessible only via a gateway connection.
 
 ## Requirements
-- Python >=3.12.10 with UV package manager
+- Python >=3.14 with [uv](https://docs.astral.sh/uv/) package manager
 - Docker Desktop / Docker + Compose
+- [just](https://just.systems/) task runner
 
 ## Getting Started (Windows)
+
+### Install just
+```powershell
+# Via scoop
+scoop install just
+# or via winget
+winget install Casey.Just
+```
+
 ### Deploy
 1. Clone the repository:
       ```powershell
       git clone https://github.com/Cybernetic-Ransomware/bpoe-events_db_handler.git
       ```
-2. Set .env file based on the template.
+2. Set .env file based on the template:
+      ```powershell
+      Copy-Item docker\.env.template docker\.env
+      # edit docker\.env with your values
+      ```
 3. Run using Docker:
       ```powershell
-      docker-compose -f .\docker\docker-compose.yml up --build -d
+      just up
       ```
+
 ### Dev-instance
 1. Clone the repository:
       ```powershell
@@ -44,7 +59,6 @@ The purpose of this project is to build a handler for main db.
 7. Install pre-commit hooks:
       ```powershell
       uv run pre-commit install
-      uv run pre-commit autoupdate
       uv run pre-commit run --all-files
       ```
 8. Run the application locally:
@@ -52,48 +66,58 @@ The purpose of this project is to build a handler for main db.
       uv run uvicorn src.main:app --host 0.0.0.0 --port 8080 --reload
       ```
 
+## Task runner (`just`)
+
+| Recipe | Description |
+|--------|-------------|
+| `just commit` | Run pre-commit on staged files, then Commitizen interactive commit |
+| `just bump` | Bump version (tags vX.Y.Z, updates pyproject.toml + uv.lock) |
+| `just format` | Auto-format source files with ruff |
+| `just lint` | Full lint suite: ruff + ty + codespell + bandit |
+| `just test` | Unit tests only (no Docker required) |
+| `just test-integration` | Integration tests (requires Docker) |
+| `just test-all` | All tests |
+| `just up` | Build and start the full Docker stack |
+| `just down` | Stop the Docker stack |
+| `just logs` | Stream app logs |
+
 ## Testing
-#### Postman
-- The repository will include a Postman collection with ready-to-import webhook mockers
 
-#### Pytest
+### Unit tests
 ```powershell
-uv sync --extra dev
-uv run pytest
-```
-
-#### Ruff
-```powershell
-uv sync --extra dev
-uv run ruff check
-```
-or as a standalone tool:
-```powershell
-uvx ruff check
+just test
+# or manually:
+uv run pytest -m "not integration"
 ```
 
-#### Mypy
+### Integration tests (requires Docker)
 ```powershell
-uv sync --extra dev
-uv run mypy .\src\
-```
-or as a standalone tool:
-```powershell
-uvx mypy .\src\
+just test-integration
+# or manually:
+uv run pytest -m integration
 ```
 
-#### Codespell
+### All tests
 ```powershell
-uv sync --extra dev
-uv run codespell
+just test-all
 ```
 
-#### Quick Mongo Instance
+### Linting and type checking
+```powershell
+just lint
+# individual tools:
+uv run ruff check src/
+uv run ty check src/
+uv run python -m codespell_lib src/
+uv run bandit -r src/ -c pyproject.toml -q
+```
+
+### Quick Mongo Instance
 ```powershell
 docker-compose -f .\docker\docker-compose-mongo-pg.yml up --build -d
 ```
 
-#### Database Access:
+### Database Access:
 Connect to the Postgres Instance via pgAdmin.
 
 To connect to the MongoDB cluster with MongoDB Compass:
@@ -126,7 +150,7 @@ Example file to insert into MongoDB:
 }
 ```
 
-#### PostgreSQL migrations
+### PostgreSQL migrations
 #####  Alembic migrations:
 - The `Dockerfile` should ensure that all model changes are reflected through Alembic migrations.
 - Make sure all SQLAlchemy model's classes are imported in: `src/core/relationaldb/migration_alembic/__init__.py`
@@ -156,7 +180,7 @@ Example file to insert into MongoDB:
 ## Useful links and documentation
 - Install TimescaleDB on Windows: [TimescaleDB](https://docs.timescale.com/self-hosted/latest/install/installation-windows/)
 - Mongo Compass winget command [winget](https://winget.run/pkg/MongoDB/Compass.Full)
-- MongoDB Asynch Connector [Motor](https://motor.readthedocs.io/en/stable/tutorial-asyncio.html)
+- MongoDB async driver [pymongo native async](https://www.mongodb.com/docs/languages/python/pymongo-driver/current/)
 - Async_postgres guide [Neon](https://neon.tech/guides/fastapi-async)
 
 - API Gateway microservice: [GitHub](https://github.com/Cybernetic-Ransomware/bpoe-api-gateway.git)

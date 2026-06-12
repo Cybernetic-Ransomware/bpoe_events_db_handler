@@ -28,11 +28,8 @@ class Participant(Base):
     name: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
 
-    event_links: Mapped[list["EventParticipantAssociation"]] = relationship(back_populates="participant")
-    owned_events: Mapped[list["Event"]] = relationship(
-        secondary="eventowner",
-        back_populates="owners"
-    )
+    event_links: Mapped[list[EventParticipantAssociation]] = relationship(back_populates="participant")
+    owned_events: Mapped[list[Event]] = relationship(secondary="eventowner", back_populates="owners")
 
 
 class Event(Base):
@@ -42,34 +39,27 @@ class Event(Base):
         UniqueConstraint("id"),
     )
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        default=uuid.uuid4,
-        nullable=False
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), default=uuid.uuid4, nullable=False)
     opened_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     name: Mapped[str] = mapped_column(Text)
 
-    locations: Mapped[list["EventLocation"]] = relationship(back_populates="event")
+    locations: Mapped[list[EventLocation]] = relationship(back_populates="event")
 
-    participant_links: Mapped[list["EventParticipantAssociation"]] = relationship(back_populates="event")
+    participant_links: Mapped[list[EventParticipantAssociation]] = relationship(back_populates="event")
 
-    owners: Mapped[list["Participant"]] = relationship(
-        secondary="eventowner",
-        back_populates="owned_events"
-    )
+    owners: Mapped[list[Participant]] = relationship(secondary="eventowner", back_populates="owned_events")
 
     @property
-    def participants(self) -> list["Participant"]:
+    def participants(self) -> list[Participant]:
         return [link.participant for link in self.participant_links if link.accepted]
 
     def assign_owner(self, participant: Participant, session: Session) -> None:
-        is_accepted = session.query(EventParticipantAssociation).filter_by(
-            event_id=self.id,
-            participant_id=participant.id,
-            accepted=True
-        ).first()
+        is_accepted = (
+            session.query(EventParticipantAssociation)
+            .filter_by(event_id=self.id, participant_id=participant.id, accepted=True)
+            .first()
+        )
 
         if not is_accepted:
             raise RecordUpdateNotAllowedError(message="Participant must accept the invitation before becoming an owner.")
@@ -84,22 +74,21 @@ class EventOwner(Base):
     event_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("event.id"), primary_key=True)
     participant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("participant.id"), primary_key=True)
 
-    event: Mapped["Event"] = relationship()
-    participant: Mapped["Participant"] = relationship()
+    event: Mapped[Event] = relationship()
+    participant: Mapped[Participant] = relationship()
 
     def validate_participation(self, session: Session) -> bool:
-        return session.query(EventParticipantAssociation).filter_by(
-            event_id=self.event_id,
-            participant_id=self.participant_id,
-            accepted=True
-        ).first() is not None
+        return (
+            session.query(EventParticipantAssociation)
+            .filter_by(event_id=self.event_id, participant_id=self.participant_id, accepted=True)
+            .first()
+            is not None
+        )
 
 
 class EventParticipantAssociation(Base):
     __tablename__ = "eventparticipantassociation"
-    __table_args__ = (
-        PrimaryKeyConstraint("event_id", "participant_id"),
-    )
+    __table_args__ = (PrimaryKeyConstraint("event_id", "participant_id"),)
 
     event_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("event.id"))
     participant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("participant.id"))
@@ -110,8 +99,8 @@ class EventParticipantAssociation(Base):
     settled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, server_default=text("false"))
     settled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    event: Mapped["Event"] = relationship(back_populates="participant_links")
-    participant: Mapped["Participant"] = relationship(back_populates="event_links")
+    event: Mapped[Event] = relationship(back_populates="participant_links")
+    participant: Mapped[Participant] = relationship(back_populates="event_links")
 
 
 class EventLocation(Base):
@@ -125,8 +114,8 @@ class EventLocation(Base):
     entered_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     exited_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), nullable=False)
-    event: Mapped["Event"] = relationship(back_populates="locations")
+    event_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("event.id"), nullable=False)
+    event: Mapped[Event] = relationship(back_populates="locations")
 
     # __table_args__ = (
     #     Index('idx_eventlocation_location', 'location', postgresql_using='gist', postgresql_where=text('TRUE')),
@@ -135,25 +124,24 @@ class EventLocation(Base):
 
 class EventTransaction(Base):
     __tablename__ = "eventtransaction"
-    __table_args__ = (
-        PrimaryKeyConstraint("id", "timestamp"),
-    )
+    __table_args__ = (PrimaryKeyConstraint("id", "timestamp"),)
 
-    id: Mapped[int] = mapped_column()
-    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), nullable=False)
-    participant_id: Mapped[int] = mapped_column(ForeignKey("participant.id"), nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), default=uuid.uuid4, nullable=False)
+    event_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("event.id"), nullable=False)
+    participant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("participant.id"), nullable=False)
 
     amount: Mapped[float] = mapped_column(nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=True)
     currency: Mapped[str] = mapped_column(String(3), default="PLN")
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
-    event: Mapped["Event"] = relationship()
-    participant: Mapped["Participant"] = relationship()
+    event: Mapped[Event] = relationship()
+    participant: Mapped[Participant] = relationship()
 
     def validate_participation(self, session: Session) -> bool:
-        return session.query(EventParticipantAssociation).filter_by(
-            event_id=self.event_id,
-            participant_id=self.participant_id,
-            accepted=True
-        ).first() is not None
+        return (
+            session.query(EventParticipantAssociation)
+            .filter_by(event_id=self.event_id, participant_id=self.participant_id, accepted=True)
+            .first()
+            is not None
+        )

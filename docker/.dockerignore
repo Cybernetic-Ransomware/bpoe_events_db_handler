@@ -1,4 +1,15 @@
-### basic_deploy_dockerignore template
 .git
+.venv
 __pycache__
-.idea\.vscode
+.idea
+.vscode
+*.pyc
+*.pyo
+.pytest_cache
+.mypy_cache
+.ruff_cache
+tests/
+result/
+log/
+docs/
+temp/

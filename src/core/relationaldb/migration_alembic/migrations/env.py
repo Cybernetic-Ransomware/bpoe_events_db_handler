@@ -5,7 +5,7 @@ from alembic.autogenerate import comparators
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine
 
-import src.core.relationaldb.migration_alembic  #n models from __init__.py
+import src.core.relationaldb.migration_alembic  # n models from __init__.py
 from src.config.config import POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_USER
 from src.core.relationaldb.models.models import Base
 
@@ -15,7 +15,7 @@ target_metadata = Base.metadata
 
 config = context.config
 
-DATABASE_URL = (f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}/{POSTGRES_DB}")
+DATABASE_URL = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}/{POSTGRES_DB}"
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 
@@ -42,22 +42,26 @@ def run_migrations_offline() -> None:
     with context.begin_transaction():
         context.run_migrations()
 
+
 def include_object(object, name, type_, reflected, compare_to):
-    if name == 'spatial_ref_sys':
+    if name == "spatial_ref_sys":
         return False
-    if name.startswith('_timescaledb_'):
+    if name.startswith("_timescaledb_"):
         return False
     return True
+
 
 def include_name(name, type_, parent_names):
     if type_ == "table":
         return name in target_metadata.tables
     return True
 
+
 def compare_indexes(context, connection, **kwargs):
-    if kwargs.get('name') == 'eventtransaction_timestamp_idx':
+    if kwargs.get("name") == "eventtransaction_timestamp_idx":
         return False
     return True
+
 
 async def run_migrations_online() -> None:
     """Run migrations in 'online' mode.

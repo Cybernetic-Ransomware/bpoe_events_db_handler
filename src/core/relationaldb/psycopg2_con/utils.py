@@ -1,16 +1,13 @@
 from abc import ABC, abstractmethod
-from contextlib import asynccontextmanager, contextmanager
+from contextlib import asynccontextmanager
 
 import asyncpg
-from psycopg2 import pool
-from psycopg2.extras import RealDictCursor
 
-from core.relationaldb.exceptions import (
+from src.config.config import POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_POOL_SIZE, POSTGRES_USER
+from src.core.relationaldb.exceptions import (
     ConnectionNotEstablishedError,
-    InvalidConnectorModeError,
     PoolNotInitializedError,
 )
-from src.config.config import POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_POOL_SIZE, POSTGRES_USER
 
 
 class BasePGConnector(ABC):
@@ -25,48 +22,6 @@ class BasePGConnector(ABC):
     @abstractmethod
     def connect(self):
         pass
-
-
-class SyncPGConnector(BasePGConnector):
-    def __init__(self):
-        super().__init__()
-        self._connection_pool: pool.AbstractConnectionPool | None = None
-
-    def connect(self):
-        if not self._connection_pool:
-            self._connection_pool = pool.SimpleConnectionPool(
-                minconn=self.pool_size[0],
-                maxconn=self.pool_size[1],
-                host=self.host,
-                port=self.port,
-                database=self.database,
-                user=self.user,
-                password=self.password
-            )
-
-    def get_pool(self):
-        if not self._connection_pool:
-            raise ConnectionNotEstablishedError("Sync connector not connected.")
-        return self._connection_pool
-
-    @contextmanager
-    def get_connection(self):
-        if self._connection_pool is None:
-            raise PoolNotInitializedError("Sync connection pool is not initialized.")
-        conn = self._connection_pool.getconn()
-        try:
-            yield conn
-        finally:
-            self._connection_pool.putconn(conn)
-
-    @contextmanager
-    def get_cursor(self):
-        with self.get_connection() as conn:
-            cursor = conn.cursor(cursor_factory=RealDictCursor)
-            try:
-                yield cursor
-            finally:
-                cursor.close()
 
 
 class AsyncPGConnector(BasePGConnector):
@@ -84,7 +39,7 @@ class AsyncPGConnector(BasePGConnector):
                 database=self.database,
                 user=self.user,
                 password=self.password,
-                command_timeout=60
+                command_timeout=60,
             )
 
     def get_pool(self):
@@ -104,10 +59,5 @@ class AsyncPGConnector(BasePGConnector):
             await self._pool.close()
 
 
-def get_pg_connector(mode: str = "sync") -> SyncPGConnector | AsyncPGConnector:
-    if mode == "sync":
-        return SyncPGConnector()
-    elif mode == "async":
-        return AsyncPGConnector()
-    else:
-        raise InvalidConnectorModeError(mode)
+def get_pg_connector() -> AsyncPGConnector:
+    return AsyncPGConnector()

@@ -20,6 +20,7 @@ END
 $$;
 """
 
+
 async def ensure_hypertables(conn_pool: Pool):
     async with conn_pool.acquire() as conn:
         await conn.execute(CREATE_HYPERTABLE_SQL)
